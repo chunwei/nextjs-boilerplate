@@ -3,6 +3,7 @@ import localFont from "next/font/local";
 import "./globals.css";
 import { ThemeProvider } from "@/components/theme-provider";
 import { Toaster } from "@/components/ui/toaster";
+import { AntdRegistry } from '@ant-design/nextjs-registry'
 
 const geistSans = localFont({
   src: "./fonts/GeistVF.woff",
@@ -36,10 +37,10 @@ export default function RootLayout({
           enableSystem
           disableTransitionOnChange
         >
-          {children}
+          <AntdRegistry>{children}</AntdRegistry>
           <Toaster />
         </ThemeProvider>
       </body>
     </html>
-  );
+  )
 }
