@@ -2,6 +2,9 @@
 
 import * as React from 'react'
 import { Check, ChevronsUpDown, PlusCircle } from 'lucide-react'
+import { useSession } from 'next-auth/react'
+import { useRouter } from 'next/navigation'
+import { useDashboard } from '@/contexts/dashboard-context'
 
 import { cn } from '@/lib/utils'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
@@ -39,47 +42,49 @@ import {
   SelectValue
 } from '@/components/ui/select'
 
-const groups = [
-  {
-    label: 'Customer Support',
-    teams: [
-      {
-        label: 'Alice',
-        value: 'bot-1'
-      },
-      {
-        label: 'Bob',
-        value: 'bot-2'
-      }
-    ]
-  },
-  {
-    label: 'Sales',
-    teams: [
-      {
-        label: 'Ada',
-        value: 'bot-3'
-      },
-      {
-        label: 'Claire',
-        value: 'bot-4'
-      }
-    ]
-  }
-]
+const useGroups = () => {
+  const { data: session } = useSession()
+  const { team } = useDashboard()
+  
+  return [
+    {
+      label: 'Customer Support',
+      teams: [
+        {
+          label: 'Alice',
+          value: 'bot-1'
+        },
+        {
+          label: 'Bob',
+          value: 'bot-2'
+        }
+      ]
+    }
+  ]
+}
 
-type Team = (typeof groups)[number]['teams'][number]
+type Team = {
+  label: string
+  value: string
+}
 
 type PopoverTriggerProps = React.ComponentPropsWithoutRef<typeof PopoverTrigger>
 
 interface ChatbotSwitcherProps extends PopoverTriggerProps {}
 
 export default function ChatbotSwitcher({ className }: ChatbotSwitcherProps) {
+  const router = useRouter()
+  const groups = useGroups()
   const [open, setOpen] = React.useState(false)
   const [showNewTeamDialog, setShowNewTeamDialog] = React.useState(false)
   const [selectedTeam, setSelectedTeam] = React.useState<Team>(
-    groups[0].teams[0]
+    groups[0]?.teams[0] || { label: '', value: '' }
   )
+
+  const handleChatbotChange = (chatbot: Team) => {
+    setSelectedTeam(chatbot)
+    setOpen(false)
+  }
 
   return (
     <Dialog open={showNewTeamDialog} onOpenChange={setShowNewTeamDialog}>
@@ -115,8 +120,7 @@ export default function ChatbotSwitcher({ className }: ChatbotSwitcherProps) {
                     <CommandItem
                       key={team.value}
                       onSelect={() => {
-                        setSelectedTeam(team)
-                        setOpen(false)
+                        handleChatbotChange(team)
                       }}
                       className="text-sm"
                     >

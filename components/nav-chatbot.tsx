@@ -14,7 +14,8 @@ import {
   Link2,
   Target
 } from 'lucide-react'
-import { use } from 'react'
+
+import { useDashboard } from '@/contexts/dashboard-context'
 
 // Define the sidebar navigation items
 const ChatbotNavItems = [
@@ -194,14 +195,19 @@ interface ChatbotNavProps extends React.HTMLAttributes<HTMLDivElement> {
 }
 
 export function ChatbotNav({ className, params, ...props }: ChatbotNavProps) {
+  const { team, botId } = useDashboard()
   const pathname = usePathname()
-  const { team, botid } = use(params)
+
+  const resolvedNavItems = ChatbotNavItems.map(item => ({
+    ...item,
+    href: item.href.replace('{team}', team ?? '').replace('{botid}', botId ?? '')
+  }))
 
   return (
     <div className="relative">
       <ScrollArea className="max-w-[600px] lg:max-w-none">
         <div className={cn('flex items-center', className)} {...props}>
-          {ChatbotNavItems.map((item) => {
+          {resolvedNavItems.map((item) => {
             const isActive = item.href
               ? pathname.includes(item.segment)
               : item.children?.some((child: { segment: string }) =>
@@ -209,9 +215,7 @@ export function ChatbotNav({ className, params, ...props }: ChatbotNavProps) {
                 )
             return (
               <Link
-                href={item.href
-                  .replace('{botid}', botid)
-                  .replace('{team}', team)}
+                href={item.href}
                 key={item.href}
                 className={cn(
                   'flex h-7 items-center justify-center rounded-full px-4 text-center text-sm transition-colors hover:text-primary',

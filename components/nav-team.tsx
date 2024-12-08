@@ -7,10 +7,10 @@ import { useParams, usePathname } from 'next/navigation'
 import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area'
 
 interface TeamNavProps extends React.HTMLAttributes<HTMLDivElement> {
-  params: Promise<{ team: string }>
+  
 }
 
-export function TeamNav({ className, params, ...props }: TeamNavProps) {
+export function TeamNav({ className, ...props }: TeamNavProps) {
   const pathname = usePathname()
   const { team } = useParams()
 

@@ -4,6 +4,8 @@ import "./globals.css";
 import { ThemeProvider } from "@/components/theme-provider";
 import { Toaster } from "@/components/ui/toaster";
 import { AntdRegistry } from '@ant-design/nextjs-registry'
+import { SessionProvider } from 'next-auth/react'
+import { auth } from '@/auth'
 
 const geistSans = localFont({
   src: "./fonts/GeistVF.woff",
@@ -21,25 +23,29 @@ export const metadata: Metadata = {
   description: 'A omni chatbot client'
 }
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: {
   children: React.ReactNode
 }) {
+  const session = await auth()
+  
   return (
     <html lang="en" suppressHydrationWarning>
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
-        <ThemeProvider
-          attribute="class"
-          defaultTheme="system"
-          enableSystem
-          disableTransitionOnChange
-        >
-          <AntdRegistry>{children}</AntdRegistry>
-          <Toaster />
-        </ThemeProvider>
+        <SessionProvider session={session}>
+          <ThemeProvider
+            attribute="class"
+            defaultTheme="system"
+            enableSystem
+            disableTransitionOnChange
+          >
+            <AntdRegistry>{children}</AntdRegistry>
+            <Toaster />
+          </ThemeProvider>
+        </SessionProvider>
       </body>
     </html>
   )

@@ -2,6 +2,9 @@
 
 import * as React from 'react'
 import { Check, ChevronsUpDown, PlusCircle } from 'lucide-react'
+import { useSession } from 'next-auth/react'
+import { useRouter } from 'next/navigation'
+import { useDashboard } from '@/contexts/dashboard-context'
 
 import { cn } from '@/lib/utils'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
@@ -39,43 +42,56 @@ import {
   SelectValue
 } from '@/components/ui/select'
 
-const groups = [
-  {
-    label: 'Personal Account',
-    teams: [
-      {
-        label: 'Alicia Koch',
-        value: 'personal'
-      }
-    ]
-  },
-  {
-    label: 'Teams',
-    teams: [
-      {
-        label: 'Acme Inc.',
-        value: 'acme-inc'
-      },
-      {
-        label: 'Monsters Inc.',
-        value: 'monsters'
-      }
-    ]
-  }
-]
+interface TeamGroup {
+  label: string
+  teams: {
+    label: string
+    value: string
+  }[]
+}
 
-type Team = (typeof groups)[number]['teams'][number]
+type Team = {
+  label: string
+  value: string
+}
 
 type PopoverTriggerProps = React.ComponentPropsWithoutRef<typeof PopoverTrigger>
 
 interface TeamSwitcherProps extends PopoverTriggerProps {}
 
 export default function TeamSwitcher({ className }: TeamSwitcherProps) {
+  const { data: session } = useSession()
+  const { team, updateTeam } = useDashboard()
+  const router = useRouter()
   const [open, setOpen] = React.useState(false)
   const [showNewTeamDialog, setShowNewTeamDialog] = React.useState(false)
-  const [selectedTeam, setSelectedTeam] = React.useState<Team>(
-    groups[0].teams[0]
-  )
+  
+  const groups: TeamGroup[] = [
+    {
+      label: 'Teams',
+      teams: session?.user?.teams?.map(({ name, url }) => ({
+        label: name,
+        value: url
+      })) || []
+    }
+  ]
+
+  const [selectedTeam, setSelectedTeam] = React.useState<Team>(() => {
+    if (typeof team === 'string') {
+      const teamObj = groups[0]?.teams.find(t => t.value === team)
+      return teamObj || groups[0]?.teams[0] || { label: '', value: '' }
+    }
+    return groups[0]?.teams[0] || { label: '', value: '' }
+  })
+
+  // 处理team切换
+  const handleTeamChange = (newTeam: Team) => {
+    setSelectedTeam(newTeam)
+    updateTeam(newTeam.value)
+    // 重定向到新team的默认页面
+    router.push(`/dashboard/${newTeam.value}/chatbots`)
+    setOpen(false)
+  }
 
   return (
     <Dialog open={showNewTeamDialog} onOpenChange={setShowNewTeamDialog}>
@@ -110,10 +126,7 @@ export default function TeamSwitcher({ className }: TeamSwitcherProps) {
                   {group.teams.map((team) => (
                     <CommandItem
                       key={team.value}
-                      onSelect={() => {
-                        setSelectedTeam(team)
-                        setOpen(false)
-                      }}
+                      onSelect={() => handleTeamChange(team)}
                       className="text-sm"
                     >
                       <Avatar className="mr-2 h-5 w-5">

@@ -3,6 +3,10 @@
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useForm } from 'react-hook-form'
 import { z } from 'zod'
+import { useRouter } from 'next/navigation'
+import { useState, useEffect } from 'react'
+import { slugify } from '@/lib/utils'
+import { signIn, useSession } from 'next-auth/react'
 
 import { toast } from '@/hooks/use-toast'
 import { Button } from '@/components/ui/button'
@@ -27,6 +31,10 @@ const FormSchema = z.object({
 })
 
 export function CreateTeamForm() {
+  const router = useRouter()
+  const [isLoading, setIsLoading] = useState(false)
+  const { update } = useSession()
+
   const form = useForm<z.infer<typeof FormSchema>>({
     resolver: zodResolver(FormSchema),
     defaultValues: {
@@ -35,30 +43,74 @@ export function CreateTeamForm() {
     }
   })
 
-  function onSubmit(data: z.infer<typeof FormSchema>) {
-    toast({
-      title: 'You submitted the following values:',
-      description: (
-        <pre className="mt-2 w-[340px] rounded-md bg-slate-950 p-4">
-          <code className="text-white">{JSON.stringify(data, null, 2)}</code>
-        </pre>
-      )
+  useEffect(() => {
+    const subscription = form.watch((value, { name }) => {
+      if (name === 'teamName') {
+        const teamUrl = slugify(value.teamName || '')
+        form.setValue('teamUrl', teamUrl, {
+          shouldValidate: true,
+          shouldDirty: true,
+          shouldTouch: true
+        })
+      }
     })
+    return () => subscription.unsubscribe()
+  }, [form])
+
+  async function onSubmit(data: z.infer<typeof FormSchema>) {
+    try {
+      setIsLoading(true)
+
+      const response = await fetch('/api/teams', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(data)
+      })
+
+      if (!response.ok) {
+        const error = await response.text()
+        throw new Error(error || 'Failed to create team')
+      }
+
+      const result = await response.json()
+
+      toast({
+        title: 'Success',
+        description: `Team "${result.name}" has been created successfully`
+      })
+
+      await update()
+      router.replace(`/dashboard/${data.teamUrl}/chatbots`)
+      
+    } catch (error) {
+      toast({
+        title: 'Error',
+        description:
+          error instanceof Error ? error.message : 'Error creating team',
+        variant: 'destructive'
+      })
+    } finally {
+      setIsLoading(false)
+    }
   }
 
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)} className=" space-y-6">
+      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
         <FormField
           control={form.control}
           name="teamName"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Team name</FormLabel>
+              <FormLabel>Team Name</FormLabel>
               <FormControl>
-                <Input placeholder="Name of your team" {...field} />
+                <Input placeholder="Enter your team name" {...field} />
               </FormControl>
-              <FormDescription>This is your team display name.</FormDescription>
+              <FormDescription>
+                This is your team's display name
+              </FormDescription>
               <FormMessage />
             </FormItem>
           )}
@@ -70,16 +122,18 @@ export function CreateTeamForm() {
             <FormItem>
               <FormLabel>Team URL</FormLabel>
               <FormControl>
-                <Input placeholder="URL of your team" {...field} />
+                <Input placeholder="Enter team URL" {...field} />
               </FormControl>
-              <FormDescription>This is your team URL.</FormDescription>
+              <FormDescription>
+                This will be used as your team's slug
+              </FormDescription>
               <FormMessage />
             </FormItem>
           )}
         />
         <div className="flex justify-center">
-          <Button type="submit" className=" w-full">
-            Create
+          <Button type="submit" className="w-full" disabled={isLoading}>
+            {isLoading ? 'Creating...' : 'Create Team'}
           </Button>
         </div>
       </form>
