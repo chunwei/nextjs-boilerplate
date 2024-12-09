@@ -6,6 +6,7 @@ import bcrypt from 'bcrypt'
 import { getUserFromDb } from '@/lib/auth'
 import GithubProvider from 'next-auth/providers/github'
 import GoogleProvider from 'next-auth/providers/google'
+import Resend from 'next-auth/providers/resend'
 import Credentials from 'next-auth/providers/credentials'
 import type { Prisma } from '@prisma/client'
 // import { ZodError } from 'zod'
@@ -43,8 +44,8 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
   debug: true,
   adapter: PrismaAdapter(db),
   session: {
-    strategy: "jwt",
-    maxAge: 30 * 24 * 60 * 60,
+    strategy: 'jwt',
+    maxAge: 30 * 24 * 60 * 60
   },
   providers: [
     Credentials({
@@ -82,29 +83,30 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
     GoogleProvider({
       clientId: process.env.GOOGLE_ID!,
       clientSecret: process.env.GOOGLE_SECRET!
-    })
+    }),
+    Resend
   ],
   callbacks: {
-    async signIn({ user, account }) {
-      console.log('SignIn Callback:', { user, account })
-      return true
-    },
     async jwt({ token, user, account }) {
+      // console.log('jwt Callback:', { token, user, account })
       if (account?.type === 'credentials' && user) {
         token.userId = user.id
+      } else if (token.sub) {
+        token.userId = token.sub
       }
       return token
     },
     async session({ session, token }) {
+      // console.log('session Callback:', { session, token })
       if (token) {
-        session.user.id = token.userId as string
+        session.user.id = (token.userId || token.sub) as string
       }
-      
+
       const teams = await db.teamMember.findMany({
         where: { userId: session.user.id },
         include: { team: true }
       })
-      
+
       return {
         ...session,
         user: {
@@ -122,8 +124,8 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
   events: {
     async signIn({ user }) {
       console.log('SignIn Event:', user)
-      const session = await db.session.findFirst({ where: { userId: user.id } })
-      console.log('Session Found:', session)
+      // const session = await db.session.findFirst({ where: { userId: user.id } })
+      // console.log('Session Found:', session)
     },
     async session({ session, token }) {
       console.log('Session Event:', { session, token })
