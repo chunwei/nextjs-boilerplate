@@ -1,0 +1,23 @@
+GET /api/v1/get-chatbot-styles/z2c2HSfKnCTh5J4650V0I
+
+response:
+{
+    "styles": {
+        "theme": "light",
+        "user_message_color": "#000000",
+        "button_color": "#000000",
+        "display_name": "Chatbase AI",
+        "auto_open_chat_window_after": 3,
+        "align_chat_button": "right",
+        "message_placeholder": "Message...",
+        "collect_user_feedback": true,
+        "regenerate_messages": true,
+        "footer": "<p style=\"text-align: center\">By chatting, you agree to our <a target=\"_blank\" rel=\"noopener noreferrer nofollow\" href=\"https://www.chatbase.co/legal/privacy\"><u>privacy policy</u></a>.</p>",
+        "header_color": "#000000",
+        "profile_picture_file": "321eb88c-aefe-4a8d-b954-86a1e0e31f21/MhE2VZxWXo1si0Gei7Fxo.jpg"
+    },
+    "initialMessages": [
+        "👋 Hi! I am Chatbase AI, ask me anything about Chatbase!",
+        "By the way, you can create a chatbot like me for your website! 😮"
+    ]
+}

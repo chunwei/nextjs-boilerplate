@@ -1,0 +1,23 @@
+GET /api/v1/chatbots?select=id%2Cname%2Cstyles%2Cindex_name%2Caccount_id&account_id=eq.56d32090-a9ef-4e0f-a85c-2643017b7f1e&order=created_at.desc
+
+response:
+[
+    {
+        "id": "mJtmxTEwbhAndLLfYFqMI",
+        "name": "Since80",
+        "styles": {
+            "theme": "light",
+            "chat_icon": "56d32090-a9ef-4e0f-a85c-2643017b7f1e/H0opWY873kqfWsEPxDQcd.jpg",
+            "button_color": "#000000",
+            "display_name": "W Pet",
+            "align_chat_button": "right",
+            "user_message_color": "#50e3c2",
+            "regenerate_messages": true,
+            "profile_picture_file": "56d32090-a9ef-4e0f-a85c-2643017b7f1e/dfEG2LJvmc6ynV490hCgU.jpg",
+            "collect_user_feedback": true,
+            "auto_open_chat_window_after": 3
+        },
+        "index_name": "12",
+        "account_id": "56d32090-a9ef-4e0f-a85c-2643017b7f1e"
+    }
+]

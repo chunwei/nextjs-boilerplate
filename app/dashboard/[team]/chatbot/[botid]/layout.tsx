@@ -13,7 +13,7 @@ export default function ChatbotLayout({
     <div className="flex flex-col h-full">
       {/* Navigation */}
       <div className="h-10 flex items-center justify-center border-b">
-        <ChatbotNav params={params} />
+        <ChatbotNav />
       </div>
 
       {/* Main Content Area */}

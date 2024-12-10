@@ -1,0 +1,53 @@
+GET /api/v1/chatbot/mJtmxTEwbhAndLLfYFqMI
+
+response:
+{
+    "id": "mJtmxTEwbhAndLLfYFqMI",
+    "name": "Since80",
+    "visibility": "private",
+    "created_at": "2024-12-05T04:46:38.631517+00:00",
+    "allowed_domains": null,
+    "instructions": null,
+    "index_name": "12",
+    "ip_limit": null,
+    "ip_limit_timeframe": null,
+    "ip_limit_message": null,
+    "suggested_messages": [
+        "What colors can I choose?"
+    ],
+    "initial_messages": [
+        "Hi! What can I help you with?"
+    ],
+    "styles": {
+        "theme": "light",
+        "chat_icon": "56d32090-a9ef-4e0f-a85c-2643017b7f1e/H0opWY873kqfWsEPxDQcd.jpg",
+        "button_color": "#000000",
+        "display_name": "W Pet",
+        "align_chat_button": "right",
+        "user_message_color": "#50e3c2",
+        "regenerate_messages": true,
+        "profile_picture_file": "56d32090-a9ef-4e0f-a85c-2643017b7f1e/dfEG2LJvmc6ynV490hCgU.jpg",
+        "collect_user_feedback": true,
+        "auto_open_chat_window_after": 3
+    },
+    "model": "gpt-4o-mini",
+    "last_message_at": null,
+    "num_of_characters": 307,
+    "last_trained_at": "2024-12-05T04:46:40.998+00:00",
+    "status": "trained",
+    "temp": 0,
+    "collect_leads_settings": null,
+    "only_allow_on_added_domains": false,
+    "notifications_settings": null,
+    "retraining_interval": null,
+    "custom_domains": null,
+    "current_training_id": "-l-_7vlPDM4rT87cqT3Cw",
+    "account_id": "56d32090-a9ef-4e0f-a85c-2643017b7f1e",
+    "analytics_sector": null,
+    "freeze_topics": false,
+    "is_embeddings_on_supabase": true,
+    "embeddings_metadata": null,
+    "credits_limit": null,
+    "credits_used": 0,
+    "embedding_model": "text-embedding-3-large"
+}

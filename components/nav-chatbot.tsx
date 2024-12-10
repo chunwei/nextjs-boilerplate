@@ -1,6 +1,8 @@
 'use client'
 
 import Link from 'next/link'
+import { useParams } from 'next/navigation'
+import { useEffect, useMemo } from 'react'
 
 import { cn } from '@/lib/utils'
 import { usePathname } from 'next/navigation'
@@ -191,17 +193,46 @@ const ChatbotNavItems = [
 ]
 
 interface ChatbotNavProps extends React.HTMLAttributes<HTMLDivElement> {
-  params: Promise<{ botid: string; team: string }>
+  
 }
 
-export function ChatbotNav({ className, params, ...props }: ChatbotNavProps) {
-  const { team, botId } = useDashboard()
+export function ChatbotNav({ className,  ...props }: ChatbotNavProps) {
+  const { team, botId: contextBotId, updateBotId } = useDashboard()
+  const params = useParams()
   const pathname = usePathname()
+  
+  // 从URL参数中获取botId
+  const urlBotId = typeof params?.botid === 'string' ? params.botid : undefined
+  
+  // 如果URL中的botId与context中的不同,更新context
+  useEffect(() => {
+    if (urlBotId && urlBotId !== contextBotId) {
+      // 添加短暂延迟,避免快速切换导致的抖动
+      const timer = setTimeout(() => {
+        updateBotId(urlBotId)
+      }, 100)
+      return () => clearTimeout(timer)
+    }
+  }, [urlBotId, contextBotId, updateBotId])
 
-  const resolvedNavItems = ChatbotNavItems.map(item => ({
-    ...item,
-    href: item.href.replace('{team}', team ?? '').replace('{botid}', botId ?? '')
-  }))
+  // 使用URL中的botId优先
+  const activeBotId = urlBotId || contextBotId
+  
+  const resolvedNavItems = useMemo(() => 
+    ChatbotNavItems.map(item => ({
+      ...item,
+      href: item.href
+        .replace('{team}', team ?? '')
+        .replace('{botid}', activeBotId ?? '')
+    })),
+    [team, activeBotId]
+  )
+
+  if (!urlBotId && !contextBotId) {
+    console.warn('No botId available')
+    // 可以返回一个降级UI或重定向
+    return <div>No botId available</div>
+  }
 
   return (
     <div className="relative">
