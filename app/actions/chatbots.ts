@@ -1,9 +1,8 @@
 'use server'
 
 import { Chatbot } from '@/types/chatbot'
-import { PrismaClient } from '@prisma/client'
-
-const prisma = new PrismaClient()
+import { prisma } from '@/lib/prisma'
+import { generateBotName } from '@/lib/utils/generate-bot-name'
 
 export async function getChatbots(teamId: string): Promise<Chatbot[]> {
   try {
@@ -19,6 +18,24 @@ export async function getChatbots(teamId: string): Promise<Chatbot[]> {
     return chatbots
   } catch (error) {
     throw new Error('获取聊天机器人失败' + error)
+  }
+}
+
+export async function createChatbot(teamId: string,name?: string) {
+  try {
+    const chatbot = await prisma.chatbot.create({
+      data: {
+        team_id: teamId,
+        name: name || generateBotName(),
+        status: "new"
+      }
+    })
+    
+    return chatbot.id
+    
+  } catch (error) {
+    console.error('Error creating chatbot:', error)
+    throw new Error('Failed to create chatbot')
   }
 }
 

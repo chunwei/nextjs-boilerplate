@@ -1,0 +1,1 @@
+export const POPULATE_DURATION = 30000 // 30 seconds 

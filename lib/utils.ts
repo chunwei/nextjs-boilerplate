@@ -20,3 +20,16 @@ export function slugify(text: string): string {
     .replace(/^-+/, '')          // 去除开头的 -
     .replace(/-+$/, '')          // 去除结尾的 -
 }
+
+export function formatCharCount(count: number) {
+  return new Intl.NumberFormat('zh-CN').format(count)
+}
+
+export function isValidUrl(url: string) {
+  try {
+    new URL(url)
+    return true
+  } catch {
+    return false
+  }
+}
