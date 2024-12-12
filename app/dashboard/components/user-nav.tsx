@@ -13,7 +13,7 @@ import {
   DropdownMenuTrigger
 } from '@/components/ui/dropdown-menu'
 import { useDashboard } from '@/contexts/dashboard-context'
-import { toast } from '@/hooks/use-toast'
+
 import {
   CreditCard,
   LayoutGrid,

@@ -1,22 +1,21 @@
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { nanoid } from 'nanoid'
 import { ChatInput } from './input'
 import { ChatMessageList } from './message-list'
 import { Message, ChatProps } from '@/types/chat'
 import { useChatStore } from '@/lib/store'
 import { getChatId } from '@/lib/utils'
-import {  useToast } from '@/hooks/use-toast'
+import { toast } from 'sonner'
 
 const PROVIDER = 'openai'
 
 export function OpenAIChat({ userId, initialMessages, onSend }: ChatProps) {
   const [loading, setLoading] = useState(false)
   const { addMessage, setMessages, getMessages } = useChatStore()
-  const { toast } = useToast()
 
   // 使用 ref 来追踪初始化状态
   const initialized = useRef(false)
-  
+
   // 只在首次渲染时初始化
   useEffect(() => {
     if (!initialized.current && initialMessages) {
@@ -26,24 +25,20 @@ export function OpenAIChat({ userId, initialMessages, onSend }: ChatProps) {
   }, [initialMessages, setMessages, userId])
 
   // 直接获取消息，不使用 useMemo
-  const chatMessages = initialized.current 
-    ? getMessages(userId, PROVIDER) 
+  const chatMessages = initialized.current
+    ? getMessages(userId, PROVIDER)
     : initialMessages || []
 
   const handleSend = async (content: string) => {
     if (!initialized.current) {
-      toast({
-        variant: "destructive",
-        title: "Error",
-        description: "Chat is still initializing"
+      toast.error('Error', {
+        description: 'Chat is still initializing'
       })
       return
     }
 
     if (!content.trim()) {
-      toast({
-        variant: 'destructive',
-        title: 'Error',
+      toast.error('Error', {
         description: 'Please enter a message.'
       })
       return
@@ -73,18 +68,14 @@ export function OpenAIChat({ userId, initialMessages, onSend }: ChatProps) {
 
       if (!response.ok) {
         const error = await response.json()
-        toast({
-          variant: 'destructive',
-          title: 'Error',
+        toast.error('Error', {
           description: error.error || 'Failed to send message'
         })
         return
       }
 
       if (!response.body) {
-        toast({
-          variant: 'destructive',
-          title: 'Error',
+        toast.error('Error', {
           description: 'No response stream'
         })
         return
@@ -119,9 +110,7 @@ export function OpenAIChat({ userId, initialMessages, onSend }: ChatProps) {
         }
       } catch (error) {
         console.error('Stream reading error:', error)
-        toast({
-          variant: 'destructive',
-          title: 'Error',
+        toast.error('Error', {
           description: `Failed to read response stream. Please try again. \n${error}`
         })
         // 移除未完成的助手消息
@@ -129,9 +118,7 @@ export function OpenAIChat({ userId, initialMessages, onSend }: ChatProps) {
       }
     } catch (error) {
       console.error('Failed to send message:', error)
-      toast({
-        variant: 'destructive',
-        title: 'Error',
+      toast.error('Error', {
         description: `Failed to send message. Please try again. \n${error}`
       })
       // 移除失败的用户消息
@@ -148,9 +135,11 @@ export function OpenAIChat({ userId, initialMessages, onSend }: ChatProps) {
         onSend={handleSend}
         disabled={loading || !initialized.current}
         placeholder={
-          !initialized.current ? '正在初始化...' :
-          loading ? 'AI正在思考中...' : 
-          '输入消息...'
+          !initialized.current
+            ? '正在初始化...'
+            : loading
+            ? 'AI正在思考中...'
+            : '输入消息...'
         }
       />
     </div>

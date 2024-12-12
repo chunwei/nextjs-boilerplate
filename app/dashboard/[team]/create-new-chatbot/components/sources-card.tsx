@@ -3,6 +3,7 @@ import { Button } from '@/components/ui/button'
 import { Progress } from '@/components/ui/progress'
 import { formatCharCount } from '@/lib/utils'
 import { POPULATE_DURATION } from '@/lib/constants'
+import { useEffect, useState } from 'react'
 
 interface SourcesCardProps {
   filesInputextractedTexts: any[]
@@ -54,6 +55,27 @@ export function SourcesCard({
   
   const totalChars = totalFileChars + textInputExtractedText.text.length + totalLinkChars + totalQnAChars + totalNotionChars
 
+  const [progress, setProgress] = useState(0)
+
+  useEffect(() => {
+    if (!startedPopulating) {
+      setProgress(0)
+      return
+    }
+
+    const timer = setInterval(() => {
+      const elapsed = Date.now() - (startedPopulating as number)
+      const newProgress = Math.min((elapsed / POPULATE_DURATION) * 100, 100)
+      setProgress(newProgress)
+
+      if (newProgress >= 100) {
+        clearInterval(timer)
+      }
+    }, 100)
+
+    return () => clearInterval(timer)
+  }, [startedPopulating])
+
   return (
     <Card className="p-4">
       <CardHeader className="text-center font-semibold">
@@ -67,7 +89,7 @@ export function SourcesCard({
               {files.length} 个文件 ({formatCharCount(totalFileChars)} 字符)
             </div>
           )}
-          
+
           {textInputExtractedText.text.length > 0 && (
             <div className="text-sm text-zinc-700">
               {formatCharCount(textInputExtractedText.text.length)} 文本输入字符
@@ -76,7 +98,8 @@ export function SourcesCard({
 
           {fetchedLinks.length > 0 && (
             <div className="text-sm text-zinc-700">
-              {fetchedLinks.length} 个链接 ({formatCharCount(totalLinkChars)} 字符)
+              {fetchedLinks.length} 个链接 ({formatCharCount(totalLinkChars)}{' '}
+              字符)
             </div>
           )}
 
@@ -88,7 +111,8 @@ export function SourcesCard({
 
           {notionPages?.length > 0 && (
             <div className="text-sm text-zinc-700">
-              {notionPages.length} 个Notion页面 ({formatCharCount(totalNotionChars)} 字符)
+              {notionPages.length} 个Notion页面 (
+              {formatCharCount(totalNotionChars)} 字符)
             </div>
           )}
         </div>
@@ -107,18 +131,17 @@ export function SourcesCard({
           className="mt-4 w-full"
           onClick={handleSubmit}
         >
-          {isPopulating ? '处理中...' : chatbotId ? '重新训练机器人' : '创建机器人'}
+          {isPopulating
+            ? '处理中...'
+            : chatbotId
+            ? '重新训练机器人'
+            : '创建机器人'}
         </Button>
 
         {startedPopulating && (
           <div className="w-full rounded-full py-4">
-            <p className="text-xs text-zinc-600">
-              {Math.min(((Date.now() - (startedPopulating as number)) / POPULATE_DURATION) * 100, 100).toFixed(0)}%
-            </p>
-            <Progress
-              value={Math.min(((Date.now() - (startedPopulating as number)) / POPULATE_DURATION) * 100, 100)}
-              className="h-2"
-            />
+            <p className="text-xs text-zinc-600">{progress.toFixed(0)}%</p>
+            <Progress value={progress} className="h-2" />
           </div>
         )}
       </CardContent>

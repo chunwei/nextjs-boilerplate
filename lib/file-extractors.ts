@@ -75,7 +75,7 @@ async function extractFromWord(file: File): Promise<string> {
     const result = await mammoth.extractRawText({ arrayBuffer })
     return result.value.trim()
   } catch (error) {
-    console.error('Word提取错误:', error)
+    // console.error('Word提取错误:', error)
     throw new Error('Word文本提取失败')
   }
 }

@@ -6,9 +6,9 @@ import { z } from 'zod'
 import { useRouter } from 'next/navigation'
 import { useState, useEffect } from 'react'
 import { slugify } from '@/lib/utils'
-import { signIn, useSession } from 'next-auth/react'
+import { useSession } from 'next-auth/react'
 
-import { toast } from '@/hooks/use-toast'
+import { toast } from 'sonner'
 import { Button } from '@/components/ui/button'
 import {
   Form,
@@ -75,21 +75,15 @@ export function CreateTeamForm() {
       }
 
       const result = await response.json()
-
-      toast({
-        title: 'Success',
+      toast.success('Success', {
         description: `Team "${result.name}" has been created successfully`
       })
-
       await update()
       router.replace(`/dashboard/${data.teamUrl}/chatbots`)
-      
     } catch (error) {
-      toast({
-        title: 'Error',
+      toast.error('Error', {
         description:
-          error instanceof Error ? error.message : 'Error creating team',
-        variant: 'destructive'
+          error instanceof Error ? error.message : 'Error creating team'
       })
     } finally {
       setIsLoading(false)
@@ -109,7 +103,7 @@ export function CreateTeamForm() {
                 <Input placeholder="Enter your team name" {...field} />
               </FormControl>
               <FormDescription>
-                This is your team's display name
+                {`This is your team's display name`}
               </FormDescription>
               <FormMessage />
             </FormItem>
@@ -125,7 +119,7 @@ export function CreateTeamForm() {
                 <Input placeholder="Enter team URL" {...field} />
               </FormControl>
               <FormDescription>
-                This will be used as your team's slug
+                {`This will be used as your team's slug`}
               </FormDescription>
               <FormMessage />
             </FormItem>

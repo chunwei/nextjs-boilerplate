@@ -132,7 +132,7 @@ export function FileUpload({
             }
           ])
         } catch (error) {
-          // console.error(error)
+          console.log(error)
           toast.error(`处理文件 ${file.name} 失败`, {
             description: error instanceof Error ? error.message : '出现了问题'
           })

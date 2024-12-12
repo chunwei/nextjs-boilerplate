@@ -82,6 +82,9 @@ const CreateChatbotPage = () => {
       setStartedPopulating(Date.now())
       setEndedPopulating(false)
 
+      // 模拟 10 秒的加载时间
+      await new Promise((resolve) => setTimeout(resolve, 10000))
+
       // 处理文件上传和源更新的逻辑
       // ...
       // 创建chatbot
@@ -90,7 +93,7 @@ const CreateChatbotPage = () => {
       // 重定向到新创建的chatbot
       router.push(`/dashboard/${teamSlug}/chatbot/${chatbotId}`)
     } catch (error) {
-      console.error(error)
+      console.log(error)
       toast.error('创建失败', {
         description: error instanceof Error ? error.message : '出现了问题'
       })

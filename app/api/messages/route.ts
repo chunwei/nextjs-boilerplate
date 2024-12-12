@@ -1,6 +1,7 @@
 import {prisma} from '@/lib/prisma'
 import { getChatId } from '@/lib/utils'
-import { HttpError, handleApiError } from '@/lib/errors'
+import { handleApiError, createErrorResponse } from '@/lib/errors'
+import { safeDbOperation } from '@/lib/db-utils'
 
 export async function GET(request: Request) {
   try {
@@ -8,10 +9,10 @@ export async function GET(request: Request) {
     const userId = searchParams.get('userId')
 
     if (!userId) {
-      throw new HttpError(400, 'userId is required')
+      return createErrorResponse(400, 'userId is required')
     }
 
-    try {
+    const messages = await safeDbOperation(async () => {
       const [anthropicMessages, openaiMessages] = await Promise.all([
         prisma.message.findMany({
           where: {
@@ -31,19 +32,17 @@ export async function GET(request: Request) {
         })
       ])
 
-      return Response.json({
+      return {
         anthropic: anthropicMessages,
         openai: openaiMessages
-      })
+      }
+    }, 'Failed to fetch messages')
 
-    } catch (error) {
-      throw new HttpError(
-        503, 
-        'Database service unavailable',
-        { cause: error }
-      )
+    if (messages instanceof Response) {
+      return messages
     }
 
+    return Response.json(messages)
   } catch (error) {
     return handleApiError(error)
   }

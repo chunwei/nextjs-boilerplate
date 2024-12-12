@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { ScrollArea } from '@/components/ui/scroll-area'
-import { toast } from '@/hooks/use-toast'
+import { toast } from 'sonner'
 import { Loader2, Send } from 'lucide-react'
 import type { Message } from '@/lib/types'
 // import { useChat } from 'ai/react'
@@ -106,9 +106,7 @@ export function Chat({
       }
     } catch (error) {
       console.error('Error:', error)
-      toast({
-        variant: 'destructive',
-        title: 'Error',
+      toast.error('Error', {
         description: 'Failed to send message. Please try again.'
       })
     } finally {

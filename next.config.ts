@@ -1,7 +1,6 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  reactDevOverlay: false,
   experimental: {
     turbo: {
       resolveAlias: {

@@ -4,37 +4,54 @@ import { Chatbot } from '@/types/chatbot'
 import { prisma } from '@/lib/prisma'
 import { generateBotName } from '@/lib/utils/generate-bot-name'
 
-export async function getChatbots(teamId: string): Promise<Chatbot[]> {
+export async function getChatbots(teamSlug: string): Promise<Chatbot[]> {
   try {
-    const chatbots = await prisma.chatbot.findMany({
+    const result = await prisma.team.findUnique({
       where: {
-        team_id: teamId
+        url: teamSlug
       },
       include: {
-        styles: true
+        chatbots: {
+          include: {
+            styles: true
+          }
+        }
       }
     })
 
-    return chatbots
+    if (!result) {
+      throw new Error('团队不存在')
+    }
+
+    return result.chatbots
   } catch (error) {
     throw new Error('获取聊天机器人失败' + error)
   }
 }
 
-export async function createChatbot(teamId: string,name?: string) {
+export async function createChatbot(teamSlug: string, name?: string) {
   try {
+    const team = await prisma.team.findUnique({
+      where: {
+        url: teamSlug
+      }
+    })
+    if (!team) {
+      throw new Error('团队不存在')
+    }
+    const teamId = team.id
+    // console.log('Creating chatbot...', teamId, name)
     const chatbot = await prisma.chatbot.create({
       data: {
         team_id: teamId,
         name: name || generateBotName(),
-        status: "new"
+        status: 'new'
       }
     })
-    
+
     return chatbot.id
-    
   } catch (error) {
-    console.error('Error creating chatbot:', error)
+    console.log('Error creating chatbot:', error)
     throw new Error('Failed to create chatbot')
   }
 }

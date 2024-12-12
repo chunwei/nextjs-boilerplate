@@ -1,1 +1,1 @@
-export const POPULATE_DURATION = 30000 // 30 seconds 
+export const POPULATE_DURATION = 10000 // 10 seconds
