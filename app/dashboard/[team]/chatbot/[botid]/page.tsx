@@ -1,12 +1,21 @@
-import React from 'react';
+import { redirect } from 'next/navigation'
 
-const ChatbotPage = () => {
+interface PageProps {
+  params: {
+    botid: string
+    team: string
+  }
+}
+
+const ChatbotPage = ({ params: { botid } }: PageProps) => {
+  redirect(`${botid}/playground`)
+
+  // 下面的代码不会执行,因为 redirect 会中断执行
   return (
     <div>
       <h1>Chatbot Details</h1>
-      {/* 这里可以添加更多内容 */}
     </div>
-  );
-};
+  )
+}
 
-export default ChatbotPage; 
+export default ChatbotPage

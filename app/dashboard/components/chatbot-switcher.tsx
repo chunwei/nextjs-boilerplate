@@ -2,8 +2,8 @@
 
 import * as React from 'react'
 import { Check, ChevronsUpDown, PlusCircle } from 'lucide-react'
-import { useSession } from 'next-auth/react'
-import { useRouter } from 'next/navigation'
+
+import { useRouter, useParams } from 'next/navigation'
 import { useDashboard } from '@/contexts/dashboard-context'
 
 import { cn } from '@/lib/utils'
@@ -41,49 +41,98 @@ import {
   SelectTrigger,
   SelectValue
 } from '@/components/ui/select'
+import { getChatbots } from '@/app/actions/chatbots'
 
 const useGroups = () => {
-  const { data: session } = useSession()
   const { team } = useDashboard()
-  
-  return [
+  const [groups, setGroups] = React.useState<
     {
-      label: 'Customer Support',
-      teams: [
-        {
-          label: 'Alice',
-          value: 'bot-1'
-        },
-        {
-          label: 'Bob',
-          value: 'bot-2'
-        }
-      ]
+      label: string
+      chatbots: { label: string; value: string }[]
+    }[]
+  >([])
+
+  React.useEffect(() => {
+    const fetchChatbots = async () => {
+      if (!team) return
+      try {
+        const chatbots = await getChatbots(team)
+        setGroups([
+          {
+            label: 'Chatbots',
+            chatbots: chatbots.map((bot) => ({
+              label: bot.name,
+              value: bot.id
+            }))
+          }
+        ])
+      } catch (error) {
+        console.error('Failed to fetch chatbots:', error)
+      }
     }
-  ]
+
+    fetchChatbots()
+  }, [team])
+
+  return groups
 }
 
-type Team = {
+type Chatbot = {
   label: string
   value: string
 }
 
-type PopoverTriggerProps = React.ComponentPropsWithoutRef<typeof PopoverTrigger>
-
-interface ChatbotSwitcherProps extends PopoverTriggerProps {}
+type ChatbotSwitcherProps = {
+  className?: string
+}
 
 export default function ChatbotSwitcher({ className }: ChatbotSwitcherProps) {
   const router = useRouter()
+  const params = useParams()
+  const { botId, updateBotId, team } = useDashboard()
   const groups = useGroups()
   const [open, setOpen] = React.useState(false)
   const [showNewTeamDialog, setShowNewTeamDialog] = React.useState(false)
-  const [selectedTeam, setSelectedTeam] = React.useState<Team>(
-    groups[0]?.teams[0] || { label: '', value: '' }
-  )
 
-  const handleChatbotChange = (chatbot: Team) => {
-    setSelectedTeam(chatbot)
+  const [selectedChatbot, setSelectedChatbot] = React.useState<Chatbot>(() => {
+    const currentBotId = params.botid || botId
+    if (currentBotId) {
+      const bot = groups[0]?.chatbots.find((t) => t.value === currentBotId)
+      return bot || groups[0]?.chatbots[0] || { label: '', value: '' }
+    }
+    return groups[0]?.chatbots[0] || { label: '', value: '' }
+  })
+
+  const handleChatbotChange = (chatbot: Chatbot) => {
+    setSelectedChatbot(chatbot)
+    updateBotId(chatbot.value)
+
+    // 获取当前完整路径
+    const currentPath = window.location.pathname
+    // 使用正则替换掉路径中的 botId
+    const newPath = currentPath.replace(
+      /\/dashboard\/[^/]+\/chatbot\/[^/]+/,
+      `/dashboard/${team}/chatbot/${chatbot.value}`
+    )
+
+    router.push(newPath)
     setOpen(false)
+  }
+
+  React.useEffect(() => {
+    const currentBotId = params.botid || botId
+    if (currentBotId && groups[0]?.chatbots) {
+      const bot = groups[0].chatbots.find((t) => t.value === currentBotId)
+      if (bot) {
+        setSelectedChatbot(bot)
+      }
+    }
+  }, [params.botid, botId, groups])
+
+  const handleCreateChatbot = () => {
+    setOpen(false)
+    setShowNewTeamDialog(false)
+    router.push(`/dashboard/${team}/create-new-chatbot`)
   }
 
   return (
@@ -99,13 +148,13 @@ export default function ChatbotSwitcher({ className }: ChatbotSwitcherProps) {
           >
             <Avatar className="mr-2 h-5 w-5">
               <AvatarImage
-                src={`https://avatar.vercel.sh/${selectedTeam.value}.png`}
-                alt={selectedTeam.label}
+                src={`https://avatar.vercel.sh/${selectedChatbot.value}.png`}
+                alt={selectedChatbot.label}
                 className="grayscale"
               />
               <AvatarFallback>SC</AvatarFallback>
             </Avatar>
-            {selectedTeam.label}
+            {selectedChatbot.label}
             <ChevronsUpDown className="ml-auto opacity-50" />
           </Button>
         </PopoverTrigger>
@@ -116,27 +165,27 @@ export default function ChatbotSwitcher({ className }: ChatbotSwitcherProps) {
               <CommandEmpty>No team found.</CommandEmpty>
               {groups.map((group) => (
                 <CommandGroup key={group.label} heading={group.label}>
-                  {group.teams.map((team) => (
+                  {group.chatbots.map((chatbot) => (
                     <CommandItem
-                      key={team.value}
+                      key={chatbot.value}
                       onSelect={() => {
-                        handleChatbotChange(team)
+                        handleChatbotChange(chatbot)
                       }}
                       className="text-sm"
                     >
                       <Avatar className="mr-2 h-5 w-5">
                         <AvatarImage
-                          src={`https://avatar.vercel.sh/${team.value}.png`}
-                          alt={team.label}
+                          src={`https://avatar.vercel.sh/${chatbot.value}.png`}
+                          alt={chatbot.label}
                           className="grayscale"
                         />
                         <AvatarFallback>SC</AvatarFallback>
                       </Avatar>
-                      {team.label}
+                      {chatbot.label}
                       <Check
                         className={cn(
                           'ml-auto',
-                          selectedTeam.value === team.value
+                          selectedChatbot.value === chatbot.value
                             ? 'opacity-100'
                             : 'opacity-0'
                         )}
@@ -150,12 +199,7 @@ export default function ChatbotSwitcher({ className }: ChatbotSwitcherProps) {
             <CommandList>
               <CommandGroup>
                 <DialogTrigger asChild>
-                  <CommandItem
-                    onSelect={() => {
-                      setOpen(false)
-                      setShowNewTeamDialog(true)
-                    }}
-                  >
+                  <CommandItem onSelect={handleCreateChatbot}>
                     <PlusCircle className="h-5 w-5" />
                     Create Chatbot
                   </CommandItem>
@@ -175,7 +219,7 @@ export default function ChatbotSwitcher({ className }: ChatbotSwitcherProps) {
         <div>
           <div className="space-y-4 py-2 pb-4">
             <div className="space-y-2">
-              <Label htmlFor="name">Team name</Label>
+              <Label htmlFor="name">Chatbot name</Label>
               <Input id="name" placeholder="Acme Inc." />
             </div>
             <div className="space-y-2">

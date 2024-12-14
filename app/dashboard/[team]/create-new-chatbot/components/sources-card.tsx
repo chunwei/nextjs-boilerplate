@@ -3,7 +3,11 @@ import { Button } from '@/components/ui/button'
 import { Progress } from '@/components/ui/progress'
 import { formatCharCount } from '@/lib/utils'
 import { POPULATE_DURATION } from '@/lib/constants'
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
+import { toast } from 'sonner'
+
+const MAX_CHARS = 500000
+const MIN_CHARS = 100
 
 interface SourcesCardProps {
   filesInputextractedTexts: any[]
@@ -48,12 +52,29 @@ export function SourcesCard({
   handleSubmit
 }: SourcesCardProps) {
   const files = [...filesInputextractedTexts, ...existingFileSources]
-  const totalFileChars = filesInputextractedTexts.reduce((acc, curr) => acc + curr.text.length, 0)
-  const totalLinkChars = fetchedLinks.reduce((acc, curr) => acc + (curr.size || 0), 0)
-  const totalQnAChars = qnaItems.reduce((acc, curr) => acc + curr.question.length + curr.answer.length, 0)
-  const totalNotionChars = notionPages.reduce((acc, curr) => acc + (curr.numChars || 0), 0)
-  
-  const totalChars = totalFileChars + textInputExtractedText.text.length + totalLinkChars + totalQnAChars + totalNotionChars
+  const totalFileChars = filesInputextractedTexts.reduce(
+    (acc, curr) => acc + curr.text.length,
+    0
+  )
+  const totalLinkChars = fetchedLinks.reduce(
+    (acc, curr) => acc + (curr.size || 0),
+    0
+  )
+  const totalQnAChars = qnaItems.reduce(
+    (acc, curr) => acc + curr.question.length + curr.answer.length,
+    0
+  )
+  const totalNotionChars = notionPages.reduce(
+    (acc, curr) => acc + (curr.numChars || 0),
+    0
+  )
+
+  const totalChars =
+    totalFileChars +
+    textInputExtractedText.text.length +
+    totalLinkChars +
+    totalQnAChars +
+    totalNotionChars
 
   const [progress, setProgress] = useState(0)
 
@@ -76,13 +97,36 @@ export function SourcesCard({
     return () => clearInterval(timer)
   }, [startedPopulating])
 
+  const handleButtonClick = useCallback(
+    (e: React.FormEvent) => {
+      if (totalChars === 0) {
+        toast.error('Error', {
+          description: 'Please add some sources'
+        })
+        return
+      } else if (totalChars > MAX_CHARS) {
+        toast.error('Error', {
+          description: `Total characters cannot exceed ${MAX_CHARS}`
+        })
+        return
+      } else if (totalChars < MIN_CHARS) {
+        toast.error('Error', {
+          description: `Total characters cannot be less than ${MIN_CHARS}`
+        })
+        return
+      }
+      handleSubmit(e)
+    },
+    [totalChars, handleSubmit]
+  )
+
   return (
     <Card className="p-4">
-      <CardHeader className="text-center font-semibold">
+      <CardHeader className="text-center font-semibold px-2">
         <CardTitle>数据源</CardTitle>
       </CardHeader>
 
-      <CardContent>
+      <CardContent className="px-2">
         <div className="mb-4 flex flex-col space-y-2">
           {files.length > 0 && (
             <div className="text-sm text-zinc-700">
@@ -118,9 +162,12 @@ export function SourcesCard({
         </div>
 
         <p className="flex flex-col text-sm">
-          <span className="font-semibold">总字符数</span>
+          <span className="font-semibold">Total detected characters</span>
           <span className="flex justify-center">
             <span className="font-bold">{formatCharCount(totalChars)}</span>
+            <span className="text-muted-foreground pl-1">
+              / {MAX_CHARS} limit
+            </span>
           </span>
         </p>
 
@@ -129,7 +176,7 @@ export function SourcesCard({
           disabled={loading || isPopulating}
           variant={isPopulating ? 'outline' : 'default'}
           className="mt-4 w-full"
-          onClick={handleSubmit}
+          onClick={handleButtonClick}
         >
           {isPopulating
             ? '处理中...'

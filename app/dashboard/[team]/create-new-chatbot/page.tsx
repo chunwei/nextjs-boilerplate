@@ -90,6 +90,9 @@ const CreateChatbotPage = () => {
       // 创建chatbot
       const chatbotId = await createChatbot(teamSlug)
 
+      toast.success('Your chatbot is trained and ready', {
+        description: 'You can now chat with your chatbot'
+      })
       // 重定向到新创建的chatbot
       router.push(`/dashboard/${teamSlug}/chatbot/${chatbotId}`)
     } catch (error) {

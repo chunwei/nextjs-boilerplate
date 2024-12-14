@@ -23,7 +23,7 @@ const DashboardLayout = ({
       )}
 
       {/* Main Content Area */}
-      <main className="flex-1 container mx-auto px-4 py-6 overflow-y-auto">
+      <main className="flex-1 container mx-auto px-4 py-4 overflow-y-auto">
         {children}
       </main>
     </div>

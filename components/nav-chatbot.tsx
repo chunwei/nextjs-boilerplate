@@ -193,7 +193,7 @@ const ChatbotNavItems = [
 ]
 
 interface ChatbotNavProps extends React.HTMLAttributes<HTMLDivElement> {
-  
+  className?: string
 }
 
 export function ChatbotNav({ className,  ...props }: ChatbotNavProps) {

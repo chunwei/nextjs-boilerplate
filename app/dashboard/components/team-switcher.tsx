@@ -57,7 +57,9 @@ type Team = {
 
 type PopoverTriggerProps = React.ComponentPropsWithoutRef<typeof PopoverTrigger>
 
-interface TeamSwitcherProps extends PopoverTriggerProps {}
+interface TeamSwitcherProps extends PopoverTriggerProps {
+  className?: string
+}
 
 export default function TeamSwitcher({ className }: TeamSwitcherProps) {
   const { data: session } = useSession()
@@ -65,20 +67,21 @@ export default function TeamSwitcher({ className }: TeamSwitcherProps) {
   const router = useRouter()
   const [open, setOpen] = React.useState(false)
   const [showNewTeamDialog, setShowNewTeamDialog] = React.useState(false)
-  
+
   const groups: TeamGroup[] = [
     {
       label: 'Teams',
-      teams: session?.user?.teams?.map(({ name, url }) => ({
-        label: name,
-        value: url
-      })) || []
+      teams:
+        session?.user?.teams?.map(({ name, url }) => ({
+          label: name,
+          value: url
+        })) || []
     }
   ]
 
   const [selectedTeam, setSelectedTeam] = React.useState<Team>(() => {
     if (typeof team === 'string') {
-      const teamObj = groups[0]?.teams.find(t => t.value === team)
+      const teamObj = groups[0]?.teams.find((t) => t.value === team)
       return teamObj || groups[0]?.teams[0] || { label: '', value: '' }
     }
     return groups[0]?.teams[0] || { label: '', value: '' }
@@ -91,6 +94,13 @@ export default function TeamSwitcher({ className }: TeamSwitcherProps) {
     // 重定向到新team的默认页面
     router.push(`/dashboard/${newTeam.value}/chatbots`)
     setOpen(false)
+  }
+
+  // 修改创建团队的处理逻辑
+  const handleCreateTeam = () => {
+    setOpen(false)
+    setShowNewTeamDialog(false)
+    router.push('/dashboard/teams/join')
   }
 
   return (
@@ -155,12 +165,7 @@ export default function TeamSwitcher({ className }: TeamSwitcherProps) {
             <CommandList>
               <CommandGroup>
                 <DialogTrigger asChild>
-                  <CommandItem
-                    onSelect={() => {
-                      setOpen(false)
-                      setShowNewTeamDialog(true)
-                    }}
-                  >
+                  <CommandItem onSelect={handleCreateTeam}>
                     <PlusCircle className="h-5 w-5" />
                     Create Team
                   </CommandItem>

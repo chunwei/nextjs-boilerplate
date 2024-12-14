@@ -5,6 +5,12 @@ const nextConfig: NextConfig = {
     turbo: {
       resolveAlias: {
         canvas: './empty-module.ts'
+      },
+      rules: {
+        '*.svg': {
+          loaders: ['@svgr/webpack'],
+          as: 'react'
+        }
       }
     }
   }
