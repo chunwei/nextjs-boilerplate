@@ -5,7 +5,7 @@ export default function Playground() {
   const initialModels = [
     'openai:gpt-4o',
     'anthropic:claude-v3.5-sonnet',
-    'perplexity:llama-3.1-sonar-huge-128k-online',
+    // 'perplexity:llama-3.1-sonar-huge-128k-online',
     'meta:llama-3.1-70b'
   ]
 

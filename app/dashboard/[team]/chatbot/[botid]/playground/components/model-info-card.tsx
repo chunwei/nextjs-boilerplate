@@ -45,7 +45,7 @@ export function ModelInfoCard({ isPopover }: ModelInfoCardProps) {
           {description}
         </div>
 
-        <div className="px-1 my-0 text-xs bg-white dark:bg-black divide-y">
+        <div className="px-1 my-0 text-xs divide-y">
           <div className="flex items-start py-3">
             <div className="font-medium w-28">Context</div>
             <div className="flex-1 text-zinc-600 dark:text-zinc-400">

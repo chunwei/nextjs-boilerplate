@@ -4,3 +4,8 @@ export interface Message {
   content: string
   timestamp: number
 }
+
+export interface ApplicationError extends Error {
+  info: string
+  status: number
+}

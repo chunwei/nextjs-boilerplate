@@ -33,3 +33,8 @@ export function isValidUrl(url: string) {
     return false
   }
 }
+
+export * from './utils/fetcher'
+export * from './utils/get-message-id-from-annotations'
+export * from './utils/sanitize-messages'
+export * from './utils/get-document-timestamp-by-index'

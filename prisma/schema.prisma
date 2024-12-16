@@ -9,6 +9,13 @@ generator client {
   previewFeatures = ["multiSchema"]
 }
 
+enum ChatVisibility {
+  public
+  private
+
+  @@schema("chat")
+}
+
 /// 添加自定义类型
 model ChatbotStyles {
   id                          String   @id @default(cuid())
@@ -41,13 +48,70 @@ datasource db {
 
 model Message {
   id        String   @id @default(cuid())
+  chatId    String // 格式: userId:provider
   role      String // 'user' 或 'assistant'
   content   String   @db.Text
-  chatId    String // 格式: userId:provider
   createdAt DateTime @default(now())
+  chat      Chat     @relation(fields: [chatId], references: [id])
+  votes     Vote[]
 
   @@index([chatId])
   @@map("messages")
+  @@schema("chat")
+}
+
+model Chat {
+  id          String   @id @default(uuid())
+  createdAt   DateTime @default(now())
+  title       String
+  userId      String
+  visibility  ChatVisibility @default(private)
+  messages    Message[]
+  votes       Vote[]
+  user        User      @relation(fields: [userId], references: [id])
+
+  @@map("Chat")
+  @@schema("chat")
+}
+
+model Vote {
+  chatId    String
+  messageId String
+  isUpvoted Boolean
+  chat      Chat     @relation(fields: [chatId], references: [id])
+  message   Message  @relation(fields: [messageId], references: [id])
+
+  @@id([chatId, messageId])
+  @@schema("chat")
+}
+
+model Document {
+  id        String      @id @default(uuid())
+  createdAt DateTime
+  title     String
+  content   String?
+  userId    String
+  user      User        @relation(fields: [userId], references: [id])
+  suggestions Suggestion[]
+
+  @@map("Document")
+  @@schema("chat")
+}
+
+model Suggestion {
+  id                String   @id @default(uuid())
+  documentId        String
+  documentCreatedAt DateTime
+  originalText      String
+  suggestedText     String
+  description       String?
+  isResolved        Boolean  @default(false)
+  userId            String
+  createdAt         DateTime @default(now())
+  user              User     @relation(fields: [userId], references: [id])
+  document          Document @relation(fields: [documentId], references: [id])
+
+  @@map("Suggestion")
   @@schema("chat")
 }
 
@@ -62,6 +126,9 @@ model User {
   accounts      Account[]
   sessions      Session[]
   teams         TeamMember[]
+  chats         Chat[]
+  documents     Document[]
+  suggestions   Suggestion[]
 
   @@schema("auth")
 }

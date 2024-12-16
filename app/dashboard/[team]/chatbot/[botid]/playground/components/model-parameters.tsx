@@ -68,7 +68,7 @@ export function ModelParameters() {
   }
 
   return (
-    <div className="w-full space-y-4">
+    <div className="w-full space-y-4 my-4">
       {Object.entries(parameters).map(
         ([key, param]) =>
           paramInfos[key] && (
@@ -86,7 +86,7 @@ export function ModelParameters() {
                         <InfoIcon className="h-4 w-4" />
                       </TooltipTrigger>
                       <TooltipContent>
-                        <p className="text-sm">
+                        <p className="text-sm max-w-60">
                           {paramInfos[key]?.description}
                         </p>
                       </TooltipContent>
