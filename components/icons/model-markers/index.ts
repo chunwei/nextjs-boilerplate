@@ -1,4 +1,5 @@
 import { AnthropicIcon } from './Anthropic'
+import { BailianIcon } from './Bailian'
 import { CohereIcon } from './Cohere'
 import { FireworksIcon } from './Fireworks'
 import { GoogleIcon } from './Google'
@@ -9,6 +10,7 @@ import { XaiIcon } from './Xai'
 
 export const MAKER_ICONS = {
   'anthropic': AnthropicIcon,
+  'bailian': BailianIcon,
   'cohere': CohereIcon,
   'fireworks': FireworksIcon,
   'google': GoogleIcon,

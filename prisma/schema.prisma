@@ -50,7 +50,7 @@ model Message {
   id        String   @id @default(cuid())
   chatId    String // 格式: userId:provider
   role      String // 'user' 或 'assistant'
-  content   String   @db.Text
+  content   Json
   createdAt DateTime @default(now())
   chat      Chat     @relation(fields: [chatId], references: [id])
   votes     Vote[]

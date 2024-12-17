@@ -56,9 +56,9 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       },
       async authorize(credentials) {
         try {
-          console.log('Authorizing credentials:', credentials)
+          // console.log('Authorizing credentials:', credentials)
           const { email, password } = await SignInSchema.parseAsync(credentials)
-          console.log('Looking up user with email:', email)
+          // console.log('Looking up user with email:', email)
           const user = await getUserFromDb(email)
           if (user && user.password) {
             const isPasswordValid = await bcrypt.compare(
@@ -121,16 +121,16 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       }
     }
   },
-  events: {
-    async signIn({ user }) {
-      console.log('SignIn Event:', user)
-      // const session = await db.session.findFirst({ where: { userId: user.id } })
-      // console.log('Session Found:', session)
-    },
-    async session({ session, token }) {
-      console.log('Session Event:', { session, token })
-    }
-  },
+  // events: {
+  //   async signIn({ user }) {
+  //     // console.log('SignIn Event:', user)
+  //     // const session = await db.session.findFirst({ where: { userId: user.id } })
+  //     // console.log('Session Found:', session)
+  //   },
+  //   async session({ session, token }) {
+  //     // console.log('Session Event:', { session, token })
+  //   }
+  // },
   pages: {
     signIn: '/auth/signin',
     signOut: '/auth/signout',

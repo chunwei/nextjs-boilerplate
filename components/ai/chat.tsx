@@ -17,6 +17,8 @@ import { MultimodalInput } from './multimodal-input'
 import { Messages } from './messages'
 import { VisibilityType } from './visibility-selector'
 import { Vote } from '@prisma/client'
+import ChatError from './chat-error'
+import { useModel } from '@/contexts/model-context'
 
 export function Chat({
   id,
@@ -31,8 +33,9 @@ export function Chat({
   selectedVisibilityType: VisibilityType
   isReadonly: boolean
 }) {
+  const { model } = useModel()
   const { mutate } = useSWRConfig()
-  console.log('Chat component rendered', { selectedVisibilityType })
+
   const {
     messages,
     setMessages,
@@ -43,16 +46,20 @@ export function Chat({
     isLoading,
     stop,
     reload,
+    error,
     data: streamingData
   } = useChat({
     id,
-    body: { id, modelId: selectedModelId },
+    body: { id, modelId: model.id || selectedModelId },
     initialMessages,
     onFinish: () => {
       mutate('/api/history')
+    },
+    onError: (error) => {
+      console.error('Error in useChat:', error)
     }
   })
-
+  console.log('Chat component rendered', { selectedVisibilityType, input })
   const { width: windowWidth = 1920, height: windowHeight = 1080 } =
     useWindowSize()
 
@@ -79,7 +86,7 @@ export function Chat({
       <div className="flex flex-col min-w-0 h-full bg-background">
         {/* <ChatHeader
           chatId={id}
-          selectedModelId={selectedModelId}
+          selectedModelId={model.id || selectedModelId}
           selectedVisibilityType={selectedVisibilityType}
           isReadonly={isReadonly}
         /> */}
@@ -95,6 +102,13 @@ export function Chat({
           reload={reload}
           isReadonly={isReadonly}
         />
+
+        {error && (
+          <ChatError
+            error={error || new Error('Unknown error')}
+            reload={reload}
+          />
+        )}
 
         <form className="flex mx-auto px-4 bg-background pb-4 md:pb-6 gap-2 w-full md:max-w-3xl">
           {!isReadonly && (

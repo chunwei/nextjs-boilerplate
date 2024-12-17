@@ -1,4 +1,4 @@
-import { Message, Suggestion, User } from '@prisma/client'
+import { Message, Prisma, Suggestion, User } from '@prisma/client'
 import { db } from './db'
 
 export async function voteMessage({
@@ -71,30 +71,35 @@ export async function getUser(email: string): Promise<Array<User>> {
 export async function saveChat({
   id,
   userId,
-  title
+  title,
+  visibility = 'private'
 }: {
   id: string
   userId: string
   title: string
+  visibility?: 'private' | 'public'
 }) {
   try {
-    return await db.chat.create({
-      data: {
-        id,
-        createdAt: new Date(),
-        userId,
-        title
-      }
+    return await db.$transaction(async (tx) => {
+      const result = await tx.chat.create({
+        data: {
+          id,
+          createdAt: new Date(),
+          userId,
+          title,
+          visibility
+        }
+      })
+      return result
     })
   } catch (error) {
-    console.error('Failed to save chat in database')
+    console.error('Failed to save chat in database', error)
     throw error
   }
 }
 
 export async function deleteChatById({ id }: { id: string }) {
   try {
-    // 使用事务确保原子性
     return await db.$transaction([
       db.vote.deleteMany({ where: { chatId: id } }),
       db.message.deleteMany({ where: { chatId: id } }),
@@ -131,8 +136,14 @@ export async function getChatById({ id }: { id: string }) {
 
 export async function saveMessages({ messages }: { messages: Array<Message> }) {
   try {
-    return await db.message.createMany({
-      data: messages
+    return await db.$transaction(async (tx) => {
+      const result = await tx.message.createMany({
+        data: messages.map((message) => ({
+          ...message,
+          content: message.content as Prisma.InputJsonValue
+        }))
+      })
+      return result
     })
   } catch (error) {
     console.error('Failed to save messages in database', error)

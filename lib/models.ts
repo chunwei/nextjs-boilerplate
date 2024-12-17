@@ -1,5 +1,42 @@
 export const models = [
   {
+    id: 'bailian:qwq-32b-preview',
+    provider: 'bailian',
+    providerHumanName: 'Bailian',
+    makerHumanName: 'Bailian',
+    modelApiName: 'qwq-32b-preview',
+    minBillingTier: 'new',
+    info: {
+      description:
+        'QwQ模型是由 Qwen 团队开发的实验性研究模型，专注于增强 AI 推理能力。',
+      website: 'https://help.aliyun.com/zh/model-studio/',
+      modelUrl:
+        'https://help.aliyun.com/zh/model-studio/getting-started/models',
+      contextWindow: 32768,
+      pricing: {
+        pricingUrl:
+          'https://help.aliyun.com/zh/model-studio/billing-for-model-studio',
+        inputCostPerMil: 3.5,
+        outputCostPerMil: 7
+      }
+    },
+    parameters: {
+      temperature: {
+        value: 0.7,
+        range: [0, 1.9]
+      },
+      maximumLength: {
+        value: 2048,
+        range: [0, 16384]
+      },
+      topP: {
+        value: 0.8,
+        range: [0, 1]
+      }
+    },
+    name: 'qwq-32b-preview'
+  },
+  {
     id: 'mistral:mistral-large',
     provider: 'mistral',
     providerHumanName: 'Mistral',

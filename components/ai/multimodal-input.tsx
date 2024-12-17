@@ -24,6 +24,8 @@ import { Button } from '@/components/ui/button'
 import { Textarea } from '@/components/ui/textarea'
 import { SuggestedActions } from './suggested-actions'
 import equal from 'fast-deep-equal'
+import { useSync } from '@/contexts/sync-context'
+import { SYNC_INPUT_EVENT, SYNC_SUBMIT_EVENT } from '@/lib/constants'
 
 function PureMultimodalInput({
   chatId,
@@ -62,6 +64,8 @@ function PureMultimodalInput({
 }) {
   const textareaRef = useRef<HTMLTextAreaElement>(null)
   const { width } = useWindowSize()
+  const { syncStates } = useSync()
+  const isSync = syncStates[chatId] !== false
 
   useEffect(() => {
     if (textareaRef.current) {
@@ -97,15 +101,52 @@ function PureMultimodalInput({
   }, [input, setLocalStorageInput])
 
   const handleInput = (event: React.ChangeEvent<HTMLTextAreaElement>) => {
-    setInput(event.target.value)
+    const newValue = event.target.value
+    setInput(newValue)
     adjustHeight()
+
+    // 如果是同步状态，广播输入变化
+    if (isSync) {
+      const syncEvent = new CustomEvent(SYNC_INPUT_EVENT, {
+        detail: { value: newValue, sourceId: chatId }
+      })
+      window.dispatchEvent(syncEvent)
+    }
   }
+
+  // 监听其他面板的输入变化
+  useEffect(() => {
+    const handleSyncInput = (e: Event) => {
+      const { value, sourceId } = (
+        e as CustomEvent<{ value: string; sourceId: string }>
+      ).detail
+      if (sourceId !== chatId && isSync) {
+        setInput(value)
+        if (textareaRef.current) {
+          textareaRef.current.value = value
+          adjustHeight()
+        }
+      }
+    }
+
+    window.addEventListener(SYNC_INPUT_EVENT, handleSyncInput)
+    return () => window.removeEventListener(SYNC_INPUT_EVENT, handleSyncInput)
+  }, [chatId, isSync, setInput])
 
   const fileInputRef = useRef<HTMLInputElement>(null)
   const [uploadQueue, setUploadQueue] = useState<Array<string>>([])
 
-  const submitForm = useCallback(() => {
-    window.history.replaceState({}, '', `/chat/${chatId}`)
+  // 添��一个 ref 来跟踪是否正在处理提交
+  const isSubmittingRef = useRef(false)
+
+  const handleFormSubmit = useCallback(() => {
+    // 如果正在处理提交，则跳过
+    if (isSubmittingRef.current) {
+      return
+    }
+
+    // 标记正在处理提交
+    isSubmittingRef.current = true
 
     handleSubmit(undefined, {
       experimental_attachments: attachments
@@ -117,14 +158,30 @@ function PureMultimodalInput({
     if (width && width > 768) {
       textareaRef.current?.focus()
     }
+
+    // 如果是同步状态，广播提交事件
+    if (isSync) {
+      const syncEvent = new CustomEvent(SYNC_SUBMIT_EVENT, {
+        detail: { sourceId: chatId }
+      })
+      window.dispatchEvent(syncEvent)
+    }
+
+    // 使用 setTimeout 确保在当前事件循环结束后重置标记
+    setTimeout(() => {
+      isSubmittingRef.current = false
+    }, 0)
   }, [
     attachments,
+    chatId,
     handleSubmit,
+    isSync,
     setAttachments,
     setLocalStorageInput,
-    width,
-    chatId
+    width
   ])
+
+  const submitForm = handleFormSubmit
 
   const uploadFile = async (file: File) => {
     const formData = new FormData()
@@ -180,6 +237,24 @@ function PureMultimodalInput({
     [setAttachments]
   )
 
+  // 添加一个状态来跟踪输入法组合状态
+  const [isComposing, setIsComposing] = useState(false)
+
+  // 监听���他面板的提交事件
+  useEffect(() => {
+    const handleSyncSubmit = (e: Event) => {
+      const { sourceId } = (e as CustomEvent<{ sourceId: string }>).detail
+      // 如果正在处理提交或者是自己触发的事件，则跳过
+      if (sourceId === chatId || isSubmittingRef.current || !isSync) {
+        return
+      }
+      handleFormSubmit()
+    }
+
+    window.addEventListener(SYNC_SUBMIT_EVENT, handleSyncSubmit)
+    return () => window.removeEventListener(SYNC_SUBMIT_EVENT, handleSyncSubmit)
+  }, [chatId, isSync, handleFormSubmit])
+
   return (
     <div className="relative w-full flex flex-col gap-4">
       {messages.length === 0 &&
@@ -198,7 +273,7 @@ function PureMultimodalInput({
       />
 
       {(attachments.length > 0 || uploadQueue.length > 0) && (
-        <div className="flex flex-row gap-2 overflow-x-scroll items-end">
+        <div className="flex flex-row gap-2 overflow-x-auto items-end">
           {attachments.map((attachment) => (
             <PreviewAttachment key={attachment.url} attachment={attachment} />
           ))}
@@ -223,13 +298,20 @@ function PureMultimodalInput({
         value={input}
         onChange={handleInput}
         className={cx(
-          'min-h-[24px] max-h-[calc(75dvh)] overflow-hidden resize-none rounded-xl !text-base bg-muted',
+          'min-h-[24px] max-h-[calc(75dvh)] overflow-hidden resize-none rounded-[20px] !text-base bg-muted/50 !pb-10',
           className
         )}
         rows={3}
         autoFocus
+        onCompositionStart={() => setIsComposing(true)}
+        onCompositionEnd={() => setIsComposing(false)}
         onKeyDown={(event) => {
           if (event.key === 'Enter' && !event.shiftKey) {
+            // 如果正在输入法输入中，不处理回车事件
+            if (isComposing) {
+              return
+            }
+
             event.preventDefault()
 
             if (isLoading) {
@@ -239,19 +321,21 @@ function PureMultimodalInput({
             }
           }
         }}
+        data-sync-input
+        data-pane-id={chatId}
       />
-
-      {isLoading ? (
-        <StopButton stop={stop} setMessages={setMessages} />
-      ) : (
-        <SendButton
-          input={input}
-          submitForm={submitForm}
-          uploadQueue={uploadQueue}
-        />
-      )}
-
-      <AttachmentsButton fileInputRef={fileInputRef} isLoading={isLoading} />
+      <div className="w-full p-2 absolute bottom-0 left-0 flex flex-row gap-2 items-center justify-between">
+        <AttachmentsButton fileInputRef={fileInputRef} isLoading={isLoading} />
+        {isLoading ? (
+          <StopButton stop={stop} setMessages={setMessages} />
+        ) : (
+          <SendButton
+            input={input}
+            submitForm={submitForm}
+            uploadQueue={uploadQueue}
+          />
+        )}
+      </div>
     </div>
   )
 }
@@ -276,7 +360,7 @@ function PureAttachmentsButton({
 }) {
   return (
     <Button
-      className="rounded-full p-1.5 h-fit absolute bottom-2 right-11 m-0.5 dark:border-zinc-700"
+      className="rounded-full p-1.5 h-fit  m-0.5 dark:border-zinc-700"
       onClick={(event) => {
         event.preventDefault()
         fileInputRef.current?.click()
@@ -300,7 +384,7 @@ function PureStopButton({
 }) {
   return (
     <Button
-      className="rounded-full p-1.5 h-fit absolute bottom-2 right-2 m-0.5 border dark:border-zinc-600"
+      className="rounded-full p-1.5 h-fit  m-0.5 border dark:border-zinc-600"
       onClick={(event) => {
         event.preventDefault()
         stop()
@@ -325,7 +409,7 @@ function PureSendButton({
 }) {
   return (
     <Button
-      className="rounded-full p-1.5 h-fit absolute bottom-2 right-2 m-0.5 border dark:border-zinc-600"
+      className="rounded-full p-1.5 h-fit  m-0.5 border dark:border-zinc-600"
       onClick={(event) => {
         event.preventDefault()
         submitForm()
@@ -338,8 +422,8 @@ function PureSendButton({
 }
 
 const SendButton = memo(PureSendButton, (prevProps, nextProps) => {
+  if (prevProps.input !== nextProps.input) return false
   if (prevProps.uploadQueue.length !== nextProps.uploadQueue.length)
     return false
-  if (!prevProps.input !== !nextProps.input) return false
   return true
 })

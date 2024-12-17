@@ -560,7 +560,7 @@ export const PaperclipIcon = ({ size = 16 }: { size?: number }) => {
       viewBox="0 0 16 16"
       width={size}
       style={{ color: 'currentcolor' }}
-      className="-rotate-45"
+      // className="-rotate-45"
     >
       <path
         fillRule="evenodd"
@@ -569,7 +569,7 @@ export const PaperclipIcon = ({ size = 16 }: { size?: number }) => {
         fill="currentColor"
       />
     </svg>
-  );
+  )
 };
 
 export const MoreHorizontalIcon = ({ size = 16 }: { size?: number }) => {

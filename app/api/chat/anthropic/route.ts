@@ -1,8 +1,8 @@
 import { NextRequest } from 'next/server'
-import { Anthropic } from '@anthropic-ai/sdk'
+import { Anthropic, APIError } from '@anthropic-ai/sdk'
 import { prisma } from '@/lib/prisma' // 假设你有一个prisma客户端实例
 import { getChatId } from '@/lib/utils'
-import { handleApiError, createErrorResponse } from '@/lib/errors'
+import { handleApiError, createErrorResponse, ErrorCode } from '@/lib/errors'
 import { MockAnthropic } from '@/lib/mock/anthropic'
 
 const anthropic = process.env.MOCK_API
@@ -85,9 +85,21 @@ export async function POST(req: NextRequest) {
 
       return new Response(customReadable)
     } catch (error) {
-      return createErrorResponse(503, 'Anthropic service error', {
-        cause: error
-      })
+      // 处理 Anthropic API 特定错误
+      if (error instanceof APIError && error.status === 429) {
+        return createErrorResponse(
+          503,
+          '服务配额已用完,请稍后再试',
+          ErrorCode.QUOTA_EXCEEDED
+        )
+      }
+
+      return createErrorResponse(
+        503,
+        'Anthropic service error',
+        ErrorCode.INTERNAL_ERROR,
+        error
+      )
     }
   } catch (error) {
     return handleApiError(error)

@@ -18,6 +18,9 @@ import ModeCardPopover from './model-card-popover'
 import { ChatbotInstructions } from './chatbot-instructions'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Chat } from '@/components/ai/chat'
+import { useSync } from '@/contexts/sync-context'
+import { useRef } from 'react'
+import { Switch } from '@/components/ui/switch'
 
 export function ChatPane({
   modelId,
@@ -38,7 +41,10 @@ export function ChatPane({
   } = usePlayground()
 
   const model = getModel(modelId) || getDefaultModel()
-  const id = crypto.randomUUID()
+  const idRef = useRef(crypto.randomUUID())
+  const id = idRef.current
+  const { syncStates, toggleSync } = useSync()
+  const isSync = syncStates[id] !== false
 
   return (
     <ModelProvider initialModel={model}>
@@ -48,6 +54,16 @@ export function ChatPane({
             <ModelSelector />
           </div>
           <div className="flex flex-shrink-0 flex-grow-0 items-center gap-1">
+            <div className="flex items-center space-x-2">
+              <Switch
+                checked={isSync}
+                onCheckedChange={() => toggleSync(id)}
+                aria-label={isSync ? 'Disable sync' : 'Enable sync'}
+                title={isSync ? 'Disable sync' : 'Enable sync'}
+                className="data-[state=checked]:bg-primary"
+              />
+            </div>
+
             <Popover>
               <PopoverTrigger asChild>
                 <Button
@@ -106,12 +122,12 @@ export function ChatPane({
         <ModeCardPopover />
 
         <div className="flex-1 overflow-auto p-4">
-          <div className="w-full h-full flex items-center justify-center">
+          <div className="w-full h-full">
             {/* <ModelInfoCard /> */}
             <Chat
               id={id}
               initialMessages={[]}
-              selectedModelId={modelId}
+              selectedModelId={model.id}
               selectedVisibilityType="public"
               isReadonly={false}
             />
