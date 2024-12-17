@@ -19,9 +19,9 @@ import {
 } from '@/components/ui/popover'
 import { Model, models } from '@/lib/models'
 import { useModel } from '@/contexts/model-context'
-import { MAKER_ICONS } from '@/components/icons/model-markers'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { useEffect } from 'react'
+import MakerIcon from '@/components/icons/MakerIcon'
 
 export function ModelSelector() {
   const [open, setOpen] = React.useState(false)
@@ -87,17 +87,7 @@ export function ModelSelector() {
         >
           {selectedModel ? (
             <div className="flex items-center gap-1 flex-1 overflow-hidden">
-              {(() => {
-                const IconComponent =
-                  MAKER_ICONS[
-                    selectedModel.makerHumanName.toLowerCase() as keyof typeof MAKER_ICONS
-                  ]
-                return IconComponent
-                  ? React.createElement(IconComponent, {
-                      className: 'flex-shrink-0 flex-grow-0'
-                    })
-                  : null
-              })()}
+              <MakerIcon makerName={selectedModel.makerHumanName} />
               <span className="text-xs text-muted-foreground flex-shrink-0 flex-grow-0">
                 {selectedModel.providerHumanName}
               </span>
@@ -137,17 +127,7 @@ export function ModelSelector() {
                   >
                     <div className="flex flex-1 items-center justify-between gap-2">
                       <div className="flex flex-1 items-center gap-2">
-                        {(() => {
-                          const IconComponent =
-                            MAKER_ICONS[
-                              model.makerHumanName.toLowerCase() as keyof typeof MAKER_ICONS
-                            ]
-                          return IconComponent
-                            ? React.createElement(IconComponent, {
-                                className: 'flex-shrink-0 flex-grow-0'
-                              })
-                            : null
-                        })()}
+                        <MakerIcon makerName={model.makerHumanName} />
 
                         <span className="flex-1 whitespace-nowrap overflow-hidden text-ellipsis  text-xs truncate">
                           {model.name}

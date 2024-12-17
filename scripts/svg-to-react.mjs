@@ -2,12 +2,12 @@ import fs from 'fs'
 import path from 'path'
 import * as cheerio from 'cheerio'
 
-const SVG_DIR = path.join(process.cwd(), 'public', 'model-markers')
+const SVG_DIR = path.join(process.cwd(), 'public', 'model-makers')
 const OUTPUT_DIR = path.join(
   process.cwd(),
   'components',
   'icons',
-  'model-markers'
+  'model-makers'
 )
 
 // 驼峰化属性名称

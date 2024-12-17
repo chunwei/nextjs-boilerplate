@@ -2,8 +2,8 @@ import { ExternalLink } from 'lucide-react'
 import { Card, CardContent, CardFooter } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { useModel } from '@/contexts/model-context'
-import { MAKER_ICONS } from '@/components/icons/model-markers'
 import React from 'react'
+import MakerIcon from '@/components/icons/MakerIcon'
 
 interface ModelInfoCardProps {
   isPopover?: boolean
@@ -20,17 +20,8 @@ export function ModelInfoCard({ isPopover }: ModelInfoCardProps) {
     <Card className="w-full max-w-2xl rounded-md">
       <CardContent className="pt-4">
         <div className="flex items-center gap-1 flex-1 overflow-hidden">
-          {(() => {
-            const IconComponent =
-              MAKER_ICONS[
-                makerHumanName.toLowerCase() as keyof typeof MAKER_ICONS
-              ]
-            return IconComponent
-              ? React.createElement(IconComponent, {
-                  className: 'flex-shrink-0 flex-grow-0'
-                })
-              : null
-          })()}
+          <MakerIcon makerName={makerHumanName} />
+
           <span className="text-xs text-muted-foreground flex-shrink-0 flex-grow-0">
             {providerHumanName}
           </span>
