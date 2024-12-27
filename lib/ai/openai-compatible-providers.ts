@@ -24,4 +24,10 @@ const bailian = createOpenAI({
   baseURL: 'https://dashscope.aliyuncs.com/compatible-mode/v1'
 })
 
-export { perplexity, fireworks, lmstudio, bailian }
+const deepseek = createOpenAI({
+  name: 'deepseek',
+  apiKey: process.env.DEEPSEEK_API_KEY ?? '',
+  baseURL: 'https://api.deepseek.com/v1'
+})
+
+export { perplexity, fireworks, lmstudio, bailian, deepseek }

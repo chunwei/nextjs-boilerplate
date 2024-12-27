@@ -1,6 +1,7 @@
 import { AnthropicIcon } from './Anthropic'
 import { BailianIcon } from './Bailian'
 import { CohereIcon } from './Cohere'
+import { DeepseekIcon } from './Deepseek'
 import { DefaultMakerIcon } from './DefaultMaker'
 import { FireworksIcon } from './Fireworks'
 import { GoogleIcon } from './Google'
@@ -13,6 +14,7 @@ export const MAKER_ICONS = {
   'anthropic': AnthropicIcon,
   'bailian': BailianIcon,
   'cohere': CohereIcon,
+  'deepseek': DeepseekIcon,
   'default-maker': DefaultMakerIcon,
   'fireworks': FireworksIcon,
   'google': GoogleIcon,

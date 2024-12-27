@@ -10,7 +10,8 @@ import {
   perplexity,
   fireworks,
   lmstudio,
-  bailian
+  bailian,
+  deepseek
 } from './openai-compatible-providers'
 import { ollama } from 'ollama-ai-provider'
 
@@ -29,5 +30,6 @@ export const registry = createProviderRegistry({
   fireworks,
   lmstudio,
   ollama,
-  bailian
+  bailian,
+  deepseek
 })

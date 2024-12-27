@@ -7,6 +7,7 @@ import { SyncProvider } from '@/contexts/sync-context'
 export default function Playground() {
   const initialModels = [
     'bailian:qwq-32b-preview',
+    'deepseek:deepseek-chat',
     // 'openai:gpt-4o',
     // 'anthropic:claude-v3.5-sonnet',
     // 'perplexity:llama-3.1-sonar-huge-128k-online',

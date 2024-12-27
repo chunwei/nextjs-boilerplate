@@ -1,5 +1,42 @@
 export const models = [
   {
+    id: 'deepseek:deepseek-chat',
+    provider: 'deepseek',
+    providerHumanName: 'DeepSeek',
+    makerHumanName: 'DeepSeek',
+    modelApiName: 'deepseek-chat',
+    minBillingTier: 'new',
+    info: {
+      description:
+        'DeepSeek-V3, a strong Mixture-of-Experts (MoE) language model with 671B total parameters with 37B activated for each token. ',
+      website: 'https://www.deepseek.com',
+      modelUrl:
+        'https://api-docs.deepseek.com/zh-cn/quick_start/pricing',
+      contextWindow: 65536,
+      pricing: {
+        pricingUrl:
+          'https://api-docs.deepseek.com/zh-cn/quick_start/pricing',
+        inputCostPerMil: 0.14,
+        outputCostPerMil: 0.28
+      }
+    },
+    parameters: {
+      temperature: {
+        value: 0.7,
+        range: [0, 1.9]
+      },
+      maximumLength: {
+        value: 8192,
+        range: [0, 8192]
+      },
+      topP: {
+        value: 0.8,
+        range: [0, 1]
+      }
+    },
+    name: 'deepseek-chat'
+  },
+  {
     id: 'bailian:qwq-32b-preview',
     provider: 'bailian',
     providerHumanName: 'Bailian',
