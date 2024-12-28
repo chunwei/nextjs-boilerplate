@@ -1,8 +1,7 @@
-import { Metadata } from 'next'
-
 import { Separator } from '@/components/ui/separator'
 import { SidebarNav } from '@/components/page-sidebar'
 import {
+  Boxes,
   CreditCard,
   GalleryVerticalEnd,
   Settings,
@@ -15,6 +14,12 @@ const sidebarNavItems = [
     href: '/dashboard/{team}/settings/general',
     segment: 'general',
     icon: <Settings />
+  },
+  {
+    title: 'Model Providers',
+    href: '/dashboard/{team}/settings/model-providers',
+    segment: 'model-providers',
+    icon: <Boxes />
   },
   {
     title: 'Members',
