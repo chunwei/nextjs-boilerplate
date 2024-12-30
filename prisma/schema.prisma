@@ -6,14 +6,12 @@
 
 generator client {
   provider        = "prisma-client-js"
-  previewFeatures = ["multiSchema"]
+  // previewFeatures = ["multiSchema"]
 }
 
 enum ChatVisibility {
   public
   private
-
-  @@schema("chat")
 }
 
 /// 添加自定义类型
@@ -37,13 +35,12 @@ model ChatbotStyles {
   chatbotId String?  @unique
 
   @@map("styles")
-  @@schema("chat")
+
 }
 
 datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
-  schemas  = ["chat", "auth"]
 }
 
 model Message {
@@ -57,7 +54,7 @@ model Message {
 
   @@index([chatId])
   @@map("messages")
-  @@schema("chat")
+
 }
 
 model Chat {
@@ -71,7 +68,7 @@ model Chat {
   user        User      @relation(fields: [userId], references: [id])
 
   @@map("Chat")
-  @@schema("chat")
+
 }
 
 model Vote {
@@ -82,7 +79,7 @@ model Vote {
   message   Message  @relation(fields: [messageId], references: [id])
 
   @@id([chatId, messageId])
-  @@schema("chat")
+
 }
 
 model Document {
@@ -95,7 +92,7 @@ model Document {
   suggestions Suggestion[]
 
   @@map("Document")
-  @@schema("chat")
+
 }
 
 model Suggestion {
@@ -112,7 +109,7 @@ model Suggestion {
   document          Document @relation(fields: [documentId], references: [id])
 
   @@map("Suggestion")
-  @@schema("chat")
+
 }
 
 model User {
@@ -129,8 +126,6 @@ model User {
   chats         Chat[]
   documents     Document[]
   suggestions   Suggestion[]
-
-  @@schema("auth")
 }
 
 model Team {
@@ -142,7 +137,7 @@ model Team {
   members   TeamMember[]
   chatbots  Chatbot[]
 
-  @@schema("chat")
+
 }
 
 model TeamMember {
@@ -156,7 +151,7 @@ model TeamMember {
   user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([teamId, userId])
-  @@schema("chat")
+
 }
 
 model Chatbot {
@@ -199,7 +194,7 @@ model Chatbot {
   Team                   Team?    @relation(fields: [team_id], references: [id])
 
   @@index([team_id])
-  @@schema("chat")
+
 }
 
 model Account {
@@ -220,7 +215,7 @@ model Account {
 
   @@unique([provider, providerAccountId])
   @@map("accounts")
-  @@schema("auth")
+
 }
 
 model Session {
@@ -231,7 +226,7 @@ model Session {
   user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@map("sessions")
-  @@schema("auth")
+
 }
 
 model VerificationToken {
@@ -241,5 +236,5 @@ model VerificationToken {
 
   @@unique([identifier, token])
   @@map("verificationtokens")
-  @@schema("auth")
+
 }
