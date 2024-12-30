@@ -26,7 +26,7 @@ export default function ChatError({ error }: ChatErrorProps) {
     <Accordion
       type="single"
       collapsible
-      className="text-sm text-destructive m-4 px-4 rounded-xl border border-destructive/50"
+      className="text-sm text-destructive my-3 px-3 rounded-lg border border-destructive/50"
     >
       <AccordionItem className="border-none" value="item-1">
         <AccordionTrigger className="py-2 hover:no-underline">

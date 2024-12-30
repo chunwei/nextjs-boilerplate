@@ -26,6 +26,7 @@ import { SuggestedActions } from './suggested-actions'
 import equal from 'fast-deep-equal'
 import { useSync } from '@/contexts/sync-context'
 import { SYNC_INPUT_EVENT, SYNC_SUBMIT_EVENT } from '@/lib/constants'
+import { HaloBorder } from '../icons/halo-border'
 
 function PureMultimodalInput({
   chatId,
@@ -256,7 +257,8 @@ function PureMultimodalInput({
   }, [chatId, isSync, handleFormSubmit])
 
   return (
-    <div className="relative w-full flex flex-col gap-4">
+    <div className="relative w-full flex flex-col gap-3 border rounded-lg p-3">
+      <HaloBorder key={messages.length} />
       {messages.length === 0 &&
         attachments.length === 0 &&
         uploadQueue.length === 0 && (
@@ -298,7 +300,7 @@ function PureMultimodalInput({
         value={input}
         onChange={handleInput}
         className={cx(
-          'min-h-[24px] max-h-[calc(75dvh)] overflow-hidden resize-none rounded-[20px] !text-base bg-muted/50 !pb-10',
+          'min-h-[24px] max-h-[calc(75dvh)] overflow-hidden resize-none rounded-md !text-base bg-muted/50 !pb-10',
           className
         )}
         rows={3}
@@ -324,7 +326,7 @@ function PureMultimodalInput({
         data-sync-input
         data-pane-id={chatId}
       />
-      <div className="w-full p-2 absolute bottom-0 left-0 flex flex-row gap-2 items-center justify-between">
+      <div className="w-full p-6 absolute bottom-0 left-0 flex flex-row gap-2 items-center justify-between">
         <AttachmentsButton fileInputRef={fileInputRef} isLoading={isLoading} />
         {isLoading ? (
           <StopButton stop={stop} setMessages={setMessages} />
