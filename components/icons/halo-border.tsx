@@ -12,10 +12,26 @@ export function HaloBorder(props: React.SVGProps<SVGSVGElement>) {
           gradientUnits="userSpaceOnUse"
           gradientTransform="rotate(-45)"
         >
-          <stop offset="0%" stopColor="#1488fc" stopOpacity="0%"></stop>
-          <stop offset="40%" stopColor="#1488fc" stopOpacity="80%"></stop>
-          <stop offset="50%" stopColor="#1488fc" stopOpacity="80%"></stop>
-          <stop offset="100%" stopColor="#1488fc" stopOpacity="0%"></stop>
+          <stop
+            offset="0%"
+            stopColor="hsl(var(--primary))"
+            stopOpacity="0%"
+          ></stop>
+          <stop
+            offset="40%"
+            stopColor="hsl(var(--primary))"
+            stopOpacity="80%"
+          ></stop>
+          <stop
+            offset="50%"
+            stopColor="hsl(var(--primary))"
+            stopOpacity="80%"
+          ></stop>
+          <stop
+            offset="100%"
+            stopColor="hsl(var(--primary))"
+            stopOpacity="0%"
+          ></stop>
         </linearGradient>
         <linearGradient id="shine-gradient">
           <stop offset="0%" stopColor="white" stopOpacity="0%"></stop>
