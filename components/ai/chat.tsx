@@ -19,6 +19,7 @@ import { VisibilityType } from './visibility-selector'
 import { Vote } from '@prisma/client'
 import ChatError from './chat-error'
 import { useModel } from '@/contexts/model-context'
+import { usePromptEnhancer } from '@/hooks/use-prompt-enhancer'
 
 export function Chat({
   id,
@@ -80,6 +81,8 @@ export function Chat({
   const { data: votes } = useSWR<Array<Vote>>(`/api/vote?chatId=${id}`, fetcher)
 
   const [attachments, setAttachments] = useState<Array<Attachment>>([])
+  const { enhancingPrompt, enhancePrompt /* resetEnhancer */ } =
+    usePromptEnhancer()
 
   return (
     <>
@@ -124,6 +127,18 @@ export function Chat({
               messages={messages}
               setMessages={setMessages}
               append={append}
+              enhancingPrompt={enhancingPrompt}
+              // promptEnhanced={promptEnhanced}
+              enhancePrompt={() => {
+                enhancePrompt(
+                  input,
+                  (input) => {
+                    setInput(input)
+                    // scrollTextArea();
+                  },
+                  model.id || selectedModelId
+                )
+              }}
             />
           )}
         </form>

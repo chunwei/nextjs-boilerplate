@@ -1,7 +1,6 @@
 'use client'
 
 import type { Attachment, ChatRequestOptions, CreateMessage, Message } from 'ai'
-import cx from 'classnames'
 import type React from 'react'
 import {
   useRef,
@@ -16,9 +15,9 @@ import {
 import { toast } from 'sonner'
 import { useLocalStorage, useWindowSize } from 'usehooks-ts'
 
-import { sanitizeUIMessages } from '@/lib/utils'
+import { cn, sanitizeUIMessages } from '@/lib/utils'
 
-import { ArrowUpIcon, PaperclipIcon, StopIcon } from './icons'
+import { ArrowUpIcon, PaperclipIcon, StopIcon, StarsIcon } from './icons'
 import { PreviewAttachment } from './preview-attachment'
 import { Button } from '@/components/ui/button'
 import { Textarea } from '@/components/ui/textarea'
@@ -27,12 +26,37 @@ import equal from 'fast-deep-equal'
 import { useSync } from '@/contexts/sync-context'
 import { SYNC_INPUT_EVENT, SYNC_SUBMIT_EVENT } from '@/lib/constants'
 import { HaloBorder } from '../icons/halo-border'
+import { Badge } from '../ui/badge'
+
+// const texts = [
+//   'How can I help you today?',
+//   'What can I do for you?',
+//   'Need assistance?'
+// ]
+const creativeHints = {
+  words: [
+    'a landing page for my...',
+    'a blog about...',
+    'a portfolio website for my...',
+    'a web app that...',
+    'a prototype...',
+    'an internal tool that...',
+    'a dashboard to...'
+  ],
+  prefix: 'Ask Omnichat to create '
+}
+const texts = creativeHints.words
+// .map(
+//   (word) => `${creativeHints.prefix}${word}`
+// )
 
 function PureMultimodalInput({
   chatId,
   input,
   setInput,
   isLoading,
+  enhancingPrompt,
+  enhancePrompt,
   stop,
   attachments,
   setAttachments,
@@ -46,6 +70,8 @@ function PureMultimodalInput({
   input: string
   setInput: (value: string) => void
   isLoading: boolean
+  enhancingPrompt: boolean
+  enhancePrompt: () => void
   stop: () => void
   attachments: Array<Attachment>
   setAttachments: Dispatch<SetStateAction<Array<Attachment>>>
@@ -77,9 +103,10 @@ function PureMultimodalInput({
   const adjustHeight = () => {
     if (textareaRef.current) {
       textareaRef.current.style.height = 'auto'
-      textareaRef.current.style.height = `${
+      textareaRef.current.style.height = `${Math.min(
+        96,
         textareaRef.current.scrollHeight + 2
-      }px`
+      )}px`
     }
   }
 
@@ -241,7 +268,7 @@ function PureMultimodalInput({
   // 添加一个状态来跟踪输入法组合状态
   const [isComposing, setIsComposing] = useState(false)
 
-  // 监听���他面板的提交事件
+  // 监听他面板的提交事件
   useEffect(() => {
     const handleSyncSubmit = (e: Event) => {
       const { sourceId } = (e as CustomEvent<{ sourceId: string }>).detail
@@ -256,8 +283,78 @@ function PureMultimodalInput({
     return () => window.removeEventListener(SYNC_SUBMIT_EVENT, handleSyncSubmit)
   }, [chatId, isSync, handleFormSubmit])
 
+  const [placeholder, setPlaceholder] = useState('')
+  const [index, setIndex] = useState(0)
+  const [subIndex, setSubIndex] = useState(0)
+  const [blink, setBlink] = useState(true)
+  const [reverse, setReverse] = useState(false)
+
+  useEffect(() => {
+    let typingTimer: NodeJS.Timeout
+
+    if (input.length === 0) {
+      if (subIndex === texts[index].length + 1 && !reverse) {
+        setReverse(true)
+        return
+      }
+
+      if (subIndex === 0 && reverse) {
+        setReverse(false)
+        setIndex((prev) => (prev + 1) % texts.length)
+        return
+      }
+
+      typingTimer = setTimeout(() => {
+        setSubIndex((prev) => prev + (reverse ? -1 : 1))
+      }, Math.max(reverse ? 30 : subIndex === texts[index].length ? 1500 : 50, Math.floor(Math.random() * 50)))
+    }
+
+    return () => clearTimeout(typingTimer)
+  }, [subIndex, index, reverse, input.length])
+
+  useEffect(() => {
+    let blinkTimer: NodeJS.Timeout
+
+    if (input.length === 0) {
+      blinkTimer = setTimeout(() => {
+        setBlink((prev) => !prev)
+      }, 500)
+    }
+
+    return () => clearTimeout(blinkTimer)
+  }, [blink, input.length])
+
+  useEffect(() => {
+    if (input.length === 0) {
+      setPlaceholder(
+        `${creativeHints.prefix}${texts[index].substring(0, subIndex)}${
+          blink ? '|' : ' '
+        }`
+      )
+    } else {
+      setPlaceholder('')
+    }
+  }, [subIndex, index, blink, input.length])
+
+  useEffect(() => {
+    const handleBlur = () => {
+      if (input.length === 0) {
+        setReverse(false)
+        setSubIndex(0)
+        setIndex(0)
+      }
+    }
+
+    const textarea = textareaRef.current
+    textarea?.addEventListener('blur', handleBlur)
+
+    return () => {
+      textarea?.removeEventListener('blur', handleBlur)
+    }
+  }, [input.length])
+
   return (
-    <div className="relative w-full flex flex-col gap-3 border rounded-lg p-3">
+    <div className="relative w-full flex flex-col gap-2 border rounded-lg p-3">
       <HaloBorder key={messages.length} />
       {messages.length === 0 &&
         attachments.length === 0 &&
@@ -296,14 +393,14 @@ function PureMultimodalInput({
 
       <Textarea
         ref={textareaRef}
-        placeholder="Send a message..."
+        placeholder={placeholder}
         value={input}
         onChange={handleInput}
-        className={cx(
-          'min-h-[24px] max-h-[calc(75dvh)] overflow-hidden resize-none rounded-md !text-base bg-muted/50 !pb-10',
+        className={cn(
+          'min-h-[32px] resize-none outline-none border-none shadow-none ring-0 focus-visible:ring-0 bg-transparent rounded-md !text-base ',
           className
         )}
-        rows={3}
+        rows={2}
         autoFocus
         onCompositionStart={() => setIsComposing(true)}
         onCompositionEnd={() => setIsComposing(false)}
@@ -326,17 +423,42 @@ function PureMultimodalInput({
         data-sync-input
         data-pane-id={chatId}
       />
-      <div className="w-full p-6 absolute bottom-0 left-0 flex flex-row gap-2 items-center justify-between">
-        <AttachmentsButton fileInputRef={fileInputRef} isLoading={isLoading} />
-        {isLoading ? (
-          <StopButton stop={stop} setMessages={setMessages} />
-        ) : (
-          <SendButton
-            input={input}
-            submitForm={submitForm}
-            uploadQueue={uploadQueue}
+      <div className="w-full py-1 flex flex-row gap-2 items-center justify-between">
+        <div className="flex items-center gap-1">
+          <AttachmentsButton
+            fileInputRef={fileInputRef}
+            isLoading={isLoading}
           />
-        )}
+          <EnhanceButton
+            enhancePrompt={enhancePrompt}
+            enhancingPrompt={enhancingPrompt}
+            input={input}
+          />
+        </div>
+        <div className="flex items-center gap-2">
+          {input.length > 3 ? (
+            <div className="text-xs text-muted-foreground">
+              Use
+              <Badge variant={'secondary'} className="px-1 mx-1 font-light">
+                Shift
+              </Badge>
+              +
+              <Badge variant={'secondary'} className="px-1 mx-1 font-light">
+                Return
+              </Badge>
+              a new line
+            </div>
+          ) : null}
+          {isLoading ? (
+            <StopButton stop={stop} setMessages={setMessages} />
+          ) : (
+            <SendButton
+              input={input}
+              submitForm={submitForm}
+              uploadQueue={uploadQueue}
+            />
+          )}
+        </div>
       </div>
     </div>
   )
@@ -362,12 +484,12 @@ function PureAttachmentsButton({
 }) {
   return (
     <Button
-      className="rounded-full p-1.5 h-fit  m-0.5 dark:border-zinc-700"
+      className="p-1 h-fit  m-0.5"
       onClick={(event) => {
         event.preventDefault()
         fileInputRef.current?.click()
       }}
-      variant="outline"
+      variant="ghost"
       disabled={isLoading}
     >
       <PaperclipIcon size={14} />
@@ -427,5 +549,36 @@ const SendButton = memo(PureSendButton, (prevProps, nextProps) => {
   if (prevProps.input !== nextProps.input) return false
   if (prevProps.uploadQueue.length !== nextProps.uploadQueue.length)
     return false
+  return true
+})
+
+function PureEnhanceButton({
+  enhancePrompt,
+  input,
+  enhancingPrompt
+}: {
+  enhancePrompt: () => void
+  input: string
+  enhancingPrompt: boolean
+}) {
+  return (
+    <Button
+      className=" p-1 h-fit  m-0.5 "
+      onClick={(event) => {
+        event.preventDefault()
+        enhancePrompt()
+        toast.success('Prompt enhanced!')
+      }}
+      variant="ghost"
+      disabled={input.length === 0 || enhancingPrompt}
+    >
+      <StarsIcon size={14} />
+    </Button>
+  )
+}
+
+const EnhanceButton = memo(PureEnhanceButton, (prevProps, nextProps) => {
+  if (prevProps.input !== nextProps.input) return false
+  if (prevProps.enhancingPrompt !== nextProps.enhancingPrompt) return false
   return true
 })

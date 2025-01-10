@@ -1,5 +1,5 @@
 .PromptEffectContainer {
-  --prompt-container-offset: 36px;
+  --prompt-container-offset: 32px;
   --prompt-line-stroke-width: 1px;
   position: absolute;
   pointer-events: none;
