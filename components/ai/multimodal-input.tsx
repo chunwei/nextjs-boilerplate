@@ -71,7 +71,7 @@ function PureMultimodalInput({
   setInput: (value: string) => void
   isLoading: boolean
   enhancingPrompt: boolean
-  enhancePrompt: () => void
+  enhancePrompt: () => Promise<void>
   stop: () => void
   attachments: Array<Attachment>
   setAttachments: Dispatch<SetStateAction<Array<Attachment>>>
@@ -557,16 +557,16 @@ function PureEnhanceButton({
   input,
   enhancingPrompt
 }: {
-  enhancePrompt: () => void
+  enhancePrompt: () => Promise<void>
   input: string
   enhancingPrompt: boolean
 }) {
   return (
     <Button
       className=" p-1 h-fit  m-0.5 "
-      onClick={(event) => {
+      onClick={async (event) => {
         event.preventDefault()
-        enhancePrompt()
+        await enhancePrompt()
         toast.success('Prompt enhanced!')
       }}
       variant="ghost"

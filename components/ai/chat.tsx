@@ -129,8 +129,8 @@ export function Chat({
               append={append}
               enhancingPrompt={enhancingPrompt}
               // promptEnhanced={promptEnhanced}
-              enhancePrompt={() => {
-                enhancePrompt(
+              enhancePrompt={async () => {
+                await enhancePrompt(
                   input,
                   (input) => {
                     setInput(input)
