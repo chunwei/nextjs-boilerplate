@@ -1,6 +1,6 @@
 'use server'
 
-import { type CoreUserMessage, generateText } from 'ai'
+import { type Message, generateText } from 'ai'
 import { cookies } from 'next/headers'
 
 // import { customModel } from '@/lib/ai'
@@ -24,7 +24,7 @@ export async function generateTitleFromUserMessage({
   modelId,
   provider
 }: {
-  message: CoreUserMessage
+  message: Message
   modelId: string
   provider: string
 }) {

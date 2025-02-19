@@ -1,4 +1,4 @@
-import { Message, Prisma, Suggestion, User } from '@prisma/client'
+import { Message,  Suggestion, User } from '@prisma/client'
 import { db } from './db'
 
 export async function voteMessage({
@@ -137,11 +137,16 @@ export async function getChatById({ id }: { id: string }) {
 export async function saveMessages({ messages }: { messages: Array<Message> }) {
   try {
     return await db.$transaction(async (tx) => {
+      const cleanedMessages = messages.map(({ id, role, content, chatId, createdAt }) => ({
+        id,
+        role,
+        content: JSON.parse(JSON.stringify(content)),
+        chatId,
+        createdAt
+      }))
+
       const result = await tx.message.createMany({
-        data: messages.map((message) => ({
-          ...message,
-          content: message.content as Prisma.InputJsonValue
-        }))
+        data: cleanedMessages
       })
       return result
     })
@@ -166,11 +171,13 @@ export async function getMessagesByChatId({ id }: { id: string }) {
 export async function saveDocument({
   id,
   title,
+  kind,
   content,
   userId
 }: {
   id: string
   title: string
+  kind: string
   content: string
   userId: string
 }) {
@@ -179,6 +186,7 @@ export async function saveDocument({
       data: {
         id,
         title,
+        kind,
         content,
         userId,
         createdAt: new Date()

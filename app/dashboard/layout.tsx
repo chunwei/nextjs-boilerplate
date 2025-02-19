@@ -7,9 +7,13 @@ import ChatbotSwitcher from './components/chatbot-switcher'
 import { useParams, usePathname, redirect } from 'next/navigation'
 import { useSession } from 'next-auth/react'
 import { useEffect, useState } from 'react'
+import Script from 'next/script'
 
-
-export default function DashboardLayout({ children }: { children: React.ReactNode }) {
+export default function DashboardLayout({
+  children
+}: {
+  children: React.ReactNode
+}) {
   const pathname = usePathname()
   const params = useParams()
   const [initialTeam, setInitialTeam] = useState<string>('')
@@ -81,21 +85,39 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   )
 
   return (
-    <DashboardProvider initialTeam={initialTeam} initialBotId={initialBotId}>
-      <div className="flex flex-col h-screen">
-        <div className="border-b">
-          <div className="flex h-16 items-center justify-between px-4">
-            <div className="flex items-center space-x-4">
-              <TeamSwitcher />
-              {shouldShowChatbotSwitcher && <ChatbotSwitcher />}
-            </div>
-            <div className="ml-auto flex items-center space-x-4">
-              <UserNav />
+    <>
+      <Script
+        id="pyodide-script"
+        src="https://cdn.jsdelivr.net/pyodide/v0.23.4/full/pyodide.js"
+        strategy="lazyOnload"
+        onLoad={() => {
+          console.log('Pyodide loaded:', typeof window.loadPyodide)
+        }}
+      />
+
+      <Script
+        src="https://cdn.jsdelivr.net/pyodide/v0.23.4/full/pyodide.js"
+        strategy="beforeInteractive"
+        onLoad={() => {
+          console.log('Pyodide loaded:', typeof window.loadPyodide)
+        }}
+      />
+      <DashboardProvider initialTeam={initialTeam} initialBotId={initialBotId}>
+        <div className="flex flex-col h-screen">
+          <div className="border-b">
+            <div className="flex h-16 items-center justify-between px-4">
+              <div className="flex items-center space-x-4">
+                <TeamSwitcher />
+                {shouldShowChatbotSwitcher && <ChatbotSwitcher />}
+              </div>
+              <div className="ml-auto flex items-center space-x-4">
+                <UserNav />
+              </div>
             </div>
           </div>
+          <main className="flex-1 overflow-y-auto">{children}</main>
         </div>
-        <main className="flex-1 overflow-y-auto">{children}</main>
-      </div>
-    </DashboardProvider>
+      </DashboardProvider>
+    </>
   )
 }

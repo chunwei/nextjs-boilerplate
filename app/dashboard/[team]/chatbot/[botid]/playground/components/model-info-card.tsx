@@ -12,7 +12,7 @@ interface ModelInfoCardProps {
 export function ModelInfoCard({ isPopover }: ModelInfoCardProps) {
   const { model, hoveredModel } = useModel()
   if (isPopover && hoveredModel === null) return null
-  console.log('hoveredModel', hoveredModel)
+
   const { providerHumanName, makerHumanName, name, info } =
     isPopover && hoveredModel ? hoveredModel : model
   const { description, contextWindow, pricing } = info

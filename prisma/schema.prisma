@@ -86,6 +86,7 @@ model Document {
   id        String      @id @default(uuid())
   createdAt DateTime
   title     String
+  kind      String @default("text")
   content   String?
   userId    String
   user      User        @relation(fields: [userId], references: [id])

@@ -27,6 +27,7 @@ import { useSync } from '@/contexts/sync-context'
 import { SYNC_INPUT_EVENT, SYNC_SUBMIT_EVENT } from '@/lib/constants'
 import { HaloBorder } from '../icons/halo-border'
 import { Badge } from '../ui/badge'
+import { SpeechRecognitionButton } from './speech-recognition'
 
 // const texts = [
 //   'How can I help you today?',
@@ -93,6 +94,75 @@ function PureMultimodalInput({
   const { width } = useWindowSize()
   const { syncStates } = useSync()
   const isSync = syncStates[chatId] !== false
+  const recognitionRef = useRef<SpeechRecognition | null>(null)
+  const [isListening, setIsListening] = useState(false)
+  const [transcript, setTranscript] = useState('')
+
+  const requestMicrophonePermission = async () => {
+    try {
+      // 先检查权限状态
+      const permissionStatus = await navigator.permissions.query({
+        name: 'microphone' as PermissionName
+      })
+      console.log('当前麦克风权限状态:', permissionStatus.state)
+
+      // 尝试获取媒体流
+      const stream = await navigator.mediaDevices.getUserMedia({
+        audio: true,
+        video: false // 明确指定不需要视频权限
+      })
+
+      console.log('成功获取到音频流:', stream.getAudioTracks())
+      return true
+    } catch (err) {
+      // 详细的错误处理
+      if (err instanceof DOMException) {
+        switch (err.name) {
+          case 'NotAllowedError':
+            console.error('用户或系统拒绝了麦克风访问权限')
+            break
+          case 'NotFoundError':
+            console.error('未找到麦克风设备')
+            break
+          case 'NotReadableError':
+            console.error('麦克风可能被其他应用程序占用')
+            break
+          default:
+            console.error('其他错误:', err.name, err.message)
+        }
+      }
+      return false
+    }
+  }
+
+  useEffect(() => {
+    console.log(transcript)
+  }, [transcript])
+
+  const startListening = useCallback(async () => {
+    console.log('startListening')
+    const hasPermission = await requestMicrophonePermission()
+    if (!hasPermission) {
+      toast.error('需要麦克风权限才能使用语音识别')
+      return
+    }
+    try {
+      if (recognitionRef.current) {
+        recognitionRef.current.start()
+        setIsListening(true)
+      }
+    } catch (err) {
+      console.error('启动语音识别失败:', err)
+      setIsListening(false)
+    }
+  }, [])
+
+  const stopListening = useCallback(() => {
+    if (recognitionRef.current) {
+      recognitionRef.current.stop()
+      setIsListening(false)
+    }
+  }, [])
 
   useEffect(() => {
     if (textareaRef.current) {
@@ -107,6 +177,13 @@ function PureMultimodalInput({
         96,
         textareaRef.current.scrollHeight + 2
       )}px`
+    }
+  }
+
+  const resetHeight = () => {
+    if (textareaRef.current) {
+      textareaRef.current.style.height = 'auto'
+      textareaRef.current.style.height = '66px'
     }
   }
 
@@ -128,19 +205,22 @@ function PureMultimodalInput({
     setLocalStorageInput(input)
   }, [input, setLocalStorageInput])
 
-  const handleInput = (event: React.ChangeEvent<HTMLTextAreaElement>) => {
-    const newValue = event.target.value
-    setInput(newValue)
-    adjustHeight()
+  const handleInput = useCallback(
+    (event: React.ChangeEvent<HTMLTextAreaElement>) => {
+      const newValue = event.target.value
+      setInput(newValue)
+      adjustHeight()
 
-    // 如果是同步状态，广播输入变化
-    if (isSync) {
-      const syncEvent = new CustomEvent(SYNC_INPUT_EVENT, {
-        detail: { value: newValue, sourceId: chatId }
-      })
-      window.dispatchEvent(syncEvent)
-    }
-  }
+      // 如果是同步状态，广播输入变化
+      if (isSync) {
+        const syncEvent = new CustomEvent(SYNC_INPUT_EVENT, {
+          detail: { value: newValue, sourceId: chatId }
+        })
+        window.dispatchEvent(syncEvent)
+      }
+    },
+    [chatId, isSync, setInput]
+  )
 
   // 监听其他面板的输入变化
   useEffect(() => {
@@ -161,10 +241,45 @@ function PureMultimodalInput({
     return () => window.removeEventListener(SYNC_INPUT_EVENT, handleSyncInput)
   }, [chatId, isSync, setInput])
 
+  useEffect(() => {
+    if (
+      typeof window !== 'undefined' &&
+      ('SpeechRecognition' in window || 'webkitSpeechRecognition' in window) &&
+      !recognitionRef.current
+    ) {
+      const SpeechRecognition =
+        window.SpeechRecognition || window.webkitSpeechRecognition
+
+      const recognition = new SpeechRecognition()
+      recognition.continuous = true
+      recognition.interimResults = true
+
+      recognition.onresult = (event: SpeechRecognitionEvent) => {
+        const transcript = Array.from(event.results)
+          .map((result) => result[0] as SpeechRecognitionAlternative)
+          .map((result) => result.transcript)
+          .join('')
+
+        setTranscript(transcript)
+        handleInput({
+          target: { value: transcript }
+        } as React.ChangeEvent<HTMLTextAreaElement>)
+      }
+
+      recognition.onerror = (event) => {
+        console.error('Speech recognition error:', event.error)
+        setIsListening(false)
+      }
+
+      recognitionRef.current = recognition
+      console.log('init speech recognition')
+    }
+  }, [handleInput])
+
   const fileInputRef = useRef<HTMLInputElement>(null)
   const [uploadQueue, setUploadQueue] = useState<Array<string>>([])
 
-  // 添��一个 ref 来跟踪是否正在处理提交
+  // ref 来跟踪是否正在处理提交
   const isSubmittingRef = useRef(false)
 
   const handleFormSubmit = useCallback(() => {
@@ -182,6 +297,7 @@ function PureMultimodalInput({
 
     setAttachments([])
     setLocalStorageInput('')
+    resetHeight()
 
     if (width && width > 768) {
       textareaRef.current?.focus()
@@ -433,6 +549,12 @@ function PureMultimodalInput({
             enhancePrompt={enhancePrompt}
             enhancingPrompt={enhancingPrompt}
             input={input}
+          />
+          <SpeechRecognitionButton
+            isListening={isListening}
+            onStart={startListening}
+            onStop={stopListening}
+            disabled={isLoading}
           />
         </div>
         <div className="flex items-center gap-2">

@@ -9,6 +9,7 @@ import { createRoot } from 'react-dom/client'
 
 import { Suggestion as PreviewSuggestion } from '@/components/ai/suggestion'
 import type { Suggestion } from '@prisma/client'
+import { ArtifactKind } from '@/components/ai/artifact'
 
 export interface UISuggestion extends Suggestion {
   selectionStart: number
@@ -68,7 +69,8 @@ export function projectWithPositions(
 
 export function createSuggestionWidget(
   suggestion: UISuggestion,
-  view: EditorView
+  view: EditorView,
+  artifactKind: ArtifactKind = 'text'
 ): { dom: HTMLElement; destroy: () => void } {
   const dom = document.createElement('span')
   const root = createRoot(dom)
@@ -111,7 +113,13 @@ export function createSuggestionWidget(
     dispatch(textTransaction)
   }
 
-  root.render(<PreviewSuggestion suggestion={suggestion} onApply={onApply} />)
+  root.render(
+    <PreviewSuggestion
+      suggestion={suggestion}
+      onApply={onApply}
+      artifactKind={artifactKind}
+    />
+  )
 
   return {
     dom,

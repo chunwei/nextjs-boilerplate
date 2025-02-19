@@ -1,5 +1,6 @@
 import React from 'react';
 import Playground from './components/playground'
+// import { SidebarProvider } from '@/components/ui/sidebar'
 
 const PlaygroundPage = () => {
   return (

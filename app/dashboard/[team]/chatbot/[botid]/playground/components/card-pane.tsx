@@ -21,6 +21,8 @@ import { Chat } from '@/components/ai/chat'
 import { useSync } from '@/contexts/sync-context'
 import { useRef } from 'react'
 import { Switch } from '@/components/ui/switch'
+import { DataStreamHandler } from '@/components/ai/data-stream-handler'
+import { generateUUID } from '@/lib/utils'
 
 export function ChatPane({
   modelId,
@@ -41,7 +43,8 @@ export function ChatPane({
   } = usePlayground()
 
   const model = getModel(modelId) || getDefaultModel()
-  const idRef = useRef(crypto.randomUUID())
+  // const idRef = useRef(crypto.randomUUID())
+  const idRef = useRef(generateUUID())
   const id = idRef.current
   const { syncStates, toggleSync } = useSync()
   const isSync = syncStates[id] !== false
@@ -131,6 +134,7 @@ export function ChatPane({
               selectedVisibilityType="public"
               isReadonly={false}
             />
+            <DataStreamHandler id={id} />
           </div>
         </div>
       </div>

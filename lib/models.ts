@@ -10,12 +10,10 @@ export const models = [
       description:
         'DeepSeek-V3, a strong Mixture-of-Experts (MoE) language model with 671B total parameters with 37B activated for each token. ',
       website: 'https://www.deepseek.com',
-      modelUrl:
-        'https://api-docs.deepseek.com/zh-cn/quick_start/pricing',
+      modelUrl: 'https://api-docs.deepseek.com/zh-cn/quick_start/pricing',
       contextWindow: 65536,
       pricing: {
-        pricingUrl:
-          'https://api-docs.deepseek.com/zh-cn/quick_start/pricing',
+        pricingUrl: 'https://api-docs.deepseek.com/zh-cn/quick_start/pricing',
         inputCostPerMil: 0.14,
         outputCostPerMil: 0.28
       }
@@ -35,6 +33,78 @@ export const models = [
       }
     },
     name: 'deepseek-chat'
+  },
+  {
+    id: 'ollama:deepseek-r1:14b',
+    provider: 'ollama',
+    providerHumanName: 'DeepSeek',
+    makerHumanName: 'DeepSeek',
+    modelApiName: 'deepseek-r1:14b',
+    minBillingTier: 'new',
+    info: {
+      description:
+        'DeepSeek-R1, a strong Mixture-of-Experts (MoE) language model with 671B total parameters with 37B activated for each token. ',
+      website: 'https://www.deepseek.com',
+      modelUrl: 'https://api-docs.deepseek.com/zh-cn/quick_start/pricing',
+      contextWindow: 65536,
+      pricing: {
+        pricingUrl: 'https://api-docs.deepseek.com/zh-cn/quick_start/pricing',
+        inputCostPerMil: 0.14,
+        outputCostPerMil: 0.28
+      }
+    },
+    parameters: {
+      temperature: {
+        value: 0.7,
+        range: [0, 1.9]
+      },
+      maximumLength: {
+        value: 8192,
+        range: [0, 8192]
+      },
+      topP: {
+        value: 0.8,
+        range: [0, 1]
+      }
+    },
+    name: 'deepseek-r1:14b'
+  },
+  {
+    id: 'bailian:qwen-max-latest',
+    provider: 'bailian',
+    providerHumanName: 'Bailian',
+    makerHumanName: 'Bailian',
+    modelApiName: 'qwen-max-latest',
+    minBillingTier: 'new',
+    info: {
+      description:
+        '通义千问全新多模态理解生成大模型，支持文本, 图像，语音，视频输入理解和混合输入理解，具备文本和语音同时流式生成能力，多模态内容理解速度显著提升，提供了4种自然对话音色。',
+      website: 'https://help.aliyun.com/zh/model-studio/',
+      modelUrl:
+        'https://help.aliyun.com/zh/model-studio/getting-started/models',
+      contextWindow: 32768,
+      pricing: {
+        pricingUrl:
+          'https://help.aliyun.com/zh/model-studio/billing-for-model-studio',
+        inputCostPerMil: 3.5,
+        outputCostPerMil: 7
+      }
+    },
+    parameters: {
+      temperature: {
+        value: 0.7,
+        range: [0, 1.9]
+      },
+      maximumLength: {
+        value: 2048,
+        range: [0, 16384]
+      },
+      topP: {
+        value: 0.8,
+        range: [0, 1]
+      }
+    },
+    name: 'qwen-max-latest'
   },
   {
     id: 'bailian:qwq-32b-preview',

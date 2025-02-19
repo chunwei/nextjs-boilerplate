@@ -6,14 +6,17 @@ import { azure } from '@ai-sdk/azure'
 import { xai } from '@ai-sdk/xai'
 import { mistral } from '@ai-sdk/mistral'
 import { groq } from '@ai-sdk/groq'
+import { deepseek } from '@ai-sdk/deepseek'
 import {
   perplexity,
   fireworks,
   lmstudio,
-  bailian,
-  deepseek
+  bailian
+  // deepseek
 } from './openai-compatible-providers'
 import { ollama } from 'ollama-ai-provider'
+
+
 
 import { experimental_createProviderRegistry as createProviderRegistry } from 'ai'
 

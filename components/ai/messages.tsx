@@ -2,16 +2,16 @@ import { ChatRequestOptions, Message } from 'ai'
 import { PreviewMessage, ThinkingMessage } from './message'
 import { useScrollToBottom } from '@/hooks/use-scroll-to-bottom'
 import { Overview } from './overview'
-import { UIBlock } from './block'
-import { Dispatch, memo, SetStateAction } from 'react'
+// import { UIBlock } from './block'
+import {  memo } from 'react'
 
 import equal from 'fast-deep-equal'
 import { Vote } from '@prisma/client'
 
 interface MessagesProps {
   chatId: string
-  block: UIBlock
-  setBlock: Dispatch<SetStateAction<UIBlock>>
+  // block: UIBlock
+  // setBlock: Dispatch<SetStateAction<UIBlock>>
   isLoading: boolean
   votes: Array<Vote> | undefined
   messages: Array<Message>
@@ -22,12 +22,13 @@ interface MessagesProps {
     chatRequestOptions?: ChatRequestOptions
   ) => Promise<string | null | undefined>
   isReadonly: boolean
+  isArtifactVisible: boolean
 }
 
 function PureMessages({
   chatId,
-  block,
-  setBlock,
+  // block,
+  // setBlock,
   isLoading,
   votes,
   messages,
@@ -50,8 +51,8 @@ function PureMessages({
           key={message.id}
           chatId={chatId}
           message={message}
-          block={block}
-          setBlock={setBlock}
+          // block={block}
+          // setBlock={setBlock}
           isLoading={isLoading && messages.length - 1 === index}
           vote={
             votes
@@ -77,9 +78,12 @@ function PureMessages({
 }
 
 export const Messages = memo(PureMessages, (prevProps, nextProps) => {
+  if (prevProps.isArtifactVisible && nextProps.isArtifactVisible) return true
+  
   if (prevProps.isLoading !== nextProps.isLoading) return false
   if (prevProps.isLoading && nextProps.isLoading) return false
   if (prevProps.messages.length !== nextProps.messages.length) return false
+  if (!equal(prevProps.messages, nextProps.messages)) return false
   if (!equal(prevProps.votes, nextProps.votes)) return false
 
   return true
