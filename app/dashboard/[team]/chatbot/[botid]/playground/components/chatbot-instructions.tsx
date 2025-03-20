@@ -7,17 +7,25 @@ import { TooltipContent } from '@/components/ui/tooltip'
 import { Tooltip, TooltipTrigger } from '@/components/ui/tooltip'
 import { TooltipProvider } from '@/components/ui/tooltip'
 import { InfoIcon } from 'lucide-react'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 
 export function ChatbotInstructions({
-  instruction
+  instruction,
+  onInstructionChange
 }: {
   instruction?: Instruction
+  onInstructionChange: (instruction: Instruction) => void
 }) {
   const defaultInstructions = getDefaultInstructions()
   const [currentInstruction, setCurrentInstruction] = useState(
     instruction || defaultInstructions
   )
+  useEffect(() => {
+    if (onInstructionChange) {
+      onInstructionChange(currentInstruction)
+    }
+  }, [currentInstruction, onInstructionChange])
+
   return (
     <div className="flex flex-col my-4">
       <div className="flex flex-col justify-between gap-4 align-baseline @md:flex-row">

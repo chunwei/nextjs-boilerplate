@@ -35,14 +35,17 @@ export const regularPrompt =
   'You are a friendly assistant! Keep your responses concise and helpful.'
 
 export const systemPrompt = ({
-  selectedChatModel
+  selectedChatModel,
+  instruction
 }: {
   selectedChatModel: string
+  instruction?: string
 }) => {
+  const basePrompt = instruction || regularPrompt
   if (selectedChatModel === 'chat-model-reasoning') {
-    return regularPrompt
+    return basePrompt
   } else {
-    return `${regularPrompt}\n\n${artifactsPrompt}`
+    return `${basePrompt}\n\n${artifactsPrompt}`
   }
 }
 

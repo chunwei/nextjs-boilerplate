@@ -19,10 +19,11 @@ import { ChatbotInstructions } from './chatbot-instructions'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Chat } from '@/components/ai/chat'
 import { useSync } from '@/contexts/sync-context'
-import { useRef } from 'react'
+import { useRef, useState } from 'react'
 import { Switch } from '@/components/ui/switch'
 import { DataStreamHandler } from '@/components/ai/data-stream-handler'
 import { generateUUID } from '@/lib/utils'
+import { getDefaultInstructions, Instruction } from '@/lib/instructions'
 
 export function ChatPane({
   modelId,
@@ -48,6 +49,11 @@ export function ChatPane({
   const id = idRef.current
   const { syncStates, toggleSync } = useSync()
   const isSync = syncStates[id] !== false
+
+  const defaultInstructions = getDefaultInstructions()
+  const [selectedInstruction, setSelectedInstruction] = useState<Instruction>(
+    /* instruction || */ defaultInstructions
+  )
 
   return (
     <ModelProvider initialModel={model}>
@@ -92,7 +98,10 @@ export function ChatPane({
                     <ModelParameters />
                   </TabsContent>
                   <TabsContent value="instructions">
-                    <ChatbotInstructions />
+                    <ChatbotInstructions
+                      instruction={selectedInstruction}
+                      onInstructionChange={setSelectedInstruction}
+                    />
                   </TabsContent>
                 </Tabs>
               </PopoverContent>
@@ -132,6 +141,7 @@ export function ChatPane({
               initialMessages={[]}
               selectedModelId={model.id}
               selectedVisibilityType="public"
+              selectedInstruction={selectedInstruction}
               isReadonly={false}
             />
             <DataStreamHandler id={id} />

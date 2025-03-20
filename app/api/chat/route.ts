@@ -34,6 +34,7 @@ import { getWeather } from '@/lib/ai/tools/get-weather'
 import { createDocument } from '@/lib/ai/tools/create-document'
 import { updateDocument } from '@/lib/ai/tools/update-document'
 import { requestSuggestions } from '@/lib/ai/tools/request-suggestions'
+import { Instruction } from '@/lib/instructions'
 
 export const maxDuration = 60
 
@@ -59,9 +60,14 @@ export async function POST(request: Request) {
     const {
       id,
       messages,
-      modelId
-    }: { id: string; messages: Array<Message>; modelId: string } =
-      await request.json()
+      modelId,
+      instruction
+    }: {
+      id: string
+      messages: Array<Message>
+      modelId: string
+      instruction?: Instruction
+    } = await request.json()
 
     const session = await auth()
 
@@ -125,7 +131,10 @@ export async function POST(request: Request) {
 
         const result = streamText({
           model: wrapDeepseek(registry.languageModel(model.id)),
-          system: systemPrompt({ selectedChatModel: model.id }),
+          system: systemPrompt({
+            selectedChatModel: model.id,
+            instruction: instruction?.instructions
+          }),
           messages,
           maxSteps: 5,
           experimental_generateMessageId: generateUUID,

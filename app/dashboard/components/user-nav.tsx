@@ -23,13 +23,16 @@ import {
 } from 'lucide-react'
 import Link from 'next/link'
 import { useSession, signOut } from 'next-auth/react'
+import { ThemeSwitcher } from '@/components/theme-switcher'
 
 export function UserNav() {
   const { team } = useDashboard()
   const { data: session } = useSession()
-  
+
   const dashboardLink = team ? `/dashboard/${team}/chatbots/` : '/dashboard'
-  const billingLink = team ? `/dashboard/${team}/settings/billing` : '/dashboard'
+  const billingLink = team
+    ? `/dashboard/${team}/settings/billing`
+    : '/dashboard'
 
   const handleLogout = async () => {
     await signOut({
@@ -47,27 +50,40 @@ export function UserNav() {
       <DropdownMenuTrigger asChild>
         <Button variant="ghost" className="relative h-8 w-8 rounded-full">
           <Avatar className="h-8 w-8">
-            <AvatarImage src={session?.user?.image || '/avatar.png'} alt={session?.user?.name || ''} />
-            <AvatarFallback>{session?.user?.name?.[0]?.toUpperCase() || 'U'}</AvatarFallback>
+            <AvatarImage
+              src={session?.user?.image || '/avatar.png'}
+              alt={session?.user?.name || ''}
+            />
+            <AvatarFallback>
+              {session?.user?.name?.[0]?.toUpperCase() || 'U'}
+            </AvatarFallback>
           </Avatar>
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent className="w-56" align="end" forceMount>
         <DropdownMenuLabel className="font-normal">
           <div className="flex flex-col space-y-1">
-            <p className="text-sm font-medium leading-none">{session?.user?.name || 'User'}</p>
+            <p className="text-sm font-medium leading-none">
+              {session?.user?.name || 'User'}
+            </p>
             <p className="text-xs leading-none text-muted-foreground">
               {session?.user?.email || ''}
             </p>
           </div>
         </DropdownMenuLabel>
         <DropdownMenuSeparator />
+        <DropdownMenuLabel className="font-normal select-none">
+          <div className="flex justify-between items-center space-x-1">
+            <div className="text-sm font-medium leading-none">Theme</div>
+            <div className="text-muted-foreground">
+              <ThemeSwitcher />
+            </div>
+          </div>
+        </DropdownMenuLabel>
+        <DropdownMenuSeparator />
         <DropdownMenuGroup>
           <DropdownMenuItem>
-            <Link
-              href={dashboardLink}
-              className="flex items-center"
-            >
+            <Link href={dashboardLink} className="flex items-center">
               <LayoutGrid className="mr-2 h-4 w-4" />
               <span>Dashboard</span>
             </Link>
@@ -81,10 +97,7 @@ export function UserNav() {
             <DropdownMenuShortcut>⌘S</DropdownMenuShortcut>
           </DropdownMenuItem>
           <DropdownMenuItem>
-            <Link
-              href={billingLink}
-              className="flex items-center"
-            >
+            <Link href={billingLink} className="flex items-center">
               <CreditCard className="mr-2 h-4 w-4" />
               <span>Billing</span>
             </Link>

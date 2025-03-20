@@ -1,7 +1,16 @@
-import { MessageSquare } from "lucide-react"
-import { ThemeToggle } from "./theme-toggle"
+/*
+ * @Author: luchunwei luchunwei@gmail.com
+ * @Date: 2024-12-06 14:53:27
+ * @LastEditors: luchunwei luchunwei@gmail.com
+ * @LastEditTime: 2025-03-19 09:49:55
+ * @FilePath: /omnichat/components/header.tsx
+ * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
+ */
+import { MessageSquare } from 'lucide-react'
+import { ThemeToggle } from './theme-toggle'
 import { Button } from './ui/button'
-import Link from "next/link"
+import Link from 'next/link'
+import { ThemeSwitcher } from './theme-switcher'
 
 export function Header() {
   return (
@@ -22,6 +31,7 @@ export function Header() {
         </div>
 
         <div className="flex items-center gap-4">
+          <ThemeSwitcher />
           <ThemeToggle />
           <Link href="/dashboard">
             <Button variant={'outline'}>Dashboard</Button>

@@ -22,12 +22,13 @@ import { useModel } from '@/contexts/model-context'
 import { usePromptEnhancer } from '@/hooks/use-prompt-enhancer'
 import { useArtifactSelector } from '@/hooks/use-artifact';
 import { Artifact } from './artifact'
+import { Instruction } from '@/lib/instructions'
 
 export function Chat({
   id,
   initialMessages,
   selectedModelId,
-  // selectedVisibilityType,
+  selectedInstruction,
   isReadonly
 }: {
   id: string
@@ -35,6 +36,7 @@ export function Chat({
   selectedModelId: string
   selectedVisibilityType: VisibilityType
   isReadonly: boolean
+  selectedInstruction?: Instruction
 }) {
   const { model } = useModel()
   const { mutate } = useSWRConfig()
@@ -49,11 +51,15 @@ export function Chat({
     isLoading,
     stop,
     reload,
-    error,
+    error
     // data: streamingData
   } = useChat({
     id,
-    body: { id, modelId: model.id || selectedModelId },
+    body: {
+      id,
+      modelId: model.id || selectedModelId,
+      instruction: selectedInstruction
+    },
     initialMessages,
     experimental_throttle: 100,
     sendExtraMessageFields: true,
@@ -86,7 +92,7 @@ export function Chat({
   const { data: votes } = useSWR<Array<Vote>>(`/api/vote?chatId=${id}`, fetcher)
 
   const [attachments, setAttachments] = useState<Array<Attachment>>([])
-  const isArtifactVisible = useArtifactSelector((state) => state.isVisible);
+  const isArtifactVisible = useArtifactSelector((state) => state.isVisible)
   const { enhancingPrompt, enhancePrompt /* resetEnhancer */ } =
     usePromptEnhancer()
 
